@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BOST · SLA Global Dashboard</title>
+  <style>
+    :root {
+      --mo-orange:#FF5900; --mo-yellow:#FFD600;
+      --mo-black:#000000;  --mo-white:#FFFFFF; --mo-gray:#F2F2F2;
+      --mo-text:#111;      --mo-muted:#666;    --mo-border:#e0e0e0;
+      --nav-h:56px;
+    }
+    [data-theme="dark"] {
+      --mo-gray:#1a1a1a; --mo-text:#f0f0f0; --mo-muted:#aaa;
+      --mo-border:#333;  --mo-white:#111;
+    }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:Arial,Helvetica,sans-serif; background:var(--mo-gray); color:var(--mo-text); }
+
+    /* NAV */
+    .mo-nav {
+      position:sticky; top:0; z-index:100;
+      background:#000; height:var(--nav-h);
+      display:flex; align-items:center; justify-content:space-between;
+      padding:0 24px; gap:16px;
+    }
+    .mo-nav-left { display:flex; align-items:center; gap:20px; }
+    .mo-nav-brand { color:#fff; font-weight:700; font-size:0.9rem; white-space:nowrap; }
+    .mo-nav-links { list-style:none; display:flex; gap:4px; }
+    .mo-nav-links li a {
+      color:#ccc; text-decoration:none; font-size:0.82rem; font-weight:600;
+      padding:6px 14px; border-radius:4px; transition:background .15s,color .15s;
+    }
+    .mo-nav-links li a:hover { background:rgba(255,255,255,.1); color:#fff; }
+    .mo-nav-links li a.active { background:var(--mo-orange); color:#fff; }
+    .mo-nav-links li a.disabled { color:#555; cursor:not-allowed; pointer-events:none; }
+    .mo-logo { width:64px; height:auto; color:#fff; flex-shrink:0; }
+
+    /* HERO */
+    .hero {
+      background:#000; padding:32px 24px 28px;
+      display:flex; flex-wrap:wrap; align-items:center;
+      justify-content:space-between; gap:16px;
+    }
+    .hero-title { color:#fff; font-size:1.75rem; font-weight:700; }
+    .hero-sub { color:#aaa; font-size:0.85rem; margin-top:4px; }
+    .hero-pill {
+      padding:6px 16px; border-radius:20px; font-size:0.85rem;
+      font-weight:700; color:#fff;
+      background:#1B5E20;
+    }
+
+    /* KPI GLOBAL */
+    .kpi-global-block {
+      background:var(--mo-white); border-radius:8px; margin:20px 20px 0;
+      padding:20px 24px; display:flex; align-items:center; gap:24px;
+      border-left:5px solid #2E7D32;
+      box-shadow:0 1px 4px rgba(0,0,0,.06);
+    }
+    .kpi-global-number { font-size:2.8rem; font-weight:700; color:#2E7D32; line-height:1; }
+    .kpi-global-label { font-size:0.9rem; color:var(--mo-muted); }
+    .kpi-global-detail { font-size:0.8rem; color:var(--mo-muted); margin-top:3px; }
+
+    /* COLA CARDS */
+    .cards-grid {
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+      gap:14px; padding:14px 20px;
+    }
+    .kpi-card {
+      background:var(--mo-white); border-radius:8px; padding:16px 18px;
+      box-shadow:0 1px 4px rgba(0,0,0,.06);
+    }
+    .kpi-card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+    .kpi-card-label { font-weight:700; font-size:0.85rem; }
+    .kpi-card-sla { font-size:0.72rem; color:var(--mo-muted); }
+    .kpi-card-pct { font-size:1.9rem; font-weight:700; line-height:1; margin-bottom:10px; }
+    .kpi-bar-bg { background:#f0f0f0; border-radius:3px; height:8px; overflow:hidden; margin-bottom:8px; }
+    .kpi-bar-fill { height:8px; border-radius:3px; transition:width .4s; }
+    .kpi-card-detail { font-size:0.75rem; color:var(--mo-muted); }
+
+    /* CHART SECTION */
+    .section-block {
+      background:var(--mo-white); border-radius:8px; margin:0 20px 14px;
+      padding:20px 24px; box-shadow:0 1px 4px rgba(0,0,0,.06);
+    }
+    .section-title { font-size:1rem; font-weight:700; margin-bottom:4px; }
+    .section-subtitle { font-size:0.8rem; color:var(--mo-muted); margin-bottom:16px; }
+    .chart-source { font-size:0.73rem; color:var(--mo-muted); margin-top:8px; }
+
+    /* ANÁLISIS */
+    .analisis-list { padding-left:18px; }
+    .analisis-list li { font-size:0.875rem; color:var(--mo-text); margin-bottom:8px; line-height:1.5; }
+
+    /* FOOTER */
+    .mo-footer {
+      background:#000; color:#aaa; font-size:0.75rem;
+      padding:18px 24px; margin-top:24px;
+      display:flex; align-items:center; justify-content:space-between; gap:16px;
+      flex-wrap:wrap;
+    }
+    .mo-footer a { color:#FF5900; text-decoration:none; }
+    .mo-footer-links { display:flex; gap:16px; }
+
+    /* THEME TOGGLE */
+    .mo-theme-btn {
+      background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.2);
+      color:#fff; font-size:0.78rem; border-radius:4px; padding:4px 10px;
+      cursor:pointer; display:flex; align-items:center; gap:5px; white-space:nowrap;
+    }
+    .mo-theme-btn:hover { background:rgba(255,255,255,.15); }
+
+    @media(max-width:600px) {
+      .cards-grid { grid-template-columns:1fr 1fr; }
+      .kpi-global-block { flex-direction:column; align-items:flex-start; }
+    }
+
+    /* CHART FILTERS */
+    .chart-filters { display:flex; gap:6px; }
+    .chart-filter-btn {
+      background:var(--mo-white); border:1.5px solid var(--mo-border);
+      color:var(--mo-muted); font-size:0.75rem; font-weight:700;
+      padding:4px 12px; border-radius:4px; cursor:pointer;
+      font-family:Arial,Helvetica,sans-serif;
+      transition:border-color .15s,color .15s,background .15s;
+    }
+    .chart-filter-btn:hover { border-color:var(--mo-orange); color:var(--mo-orange); }
+    .chart-filter-btn.active { background:var(--mo-orange); border-color:var(--mo-orange); color:#fff; }
+    /* COLA TOGGLES */
+    .cola-toggle-btn {
+      background:var(--mo-white); border:1.5px solid; font-size:0.72rem; font-weight:700;
+      padding:3px 10px; border-radius:4px; cursor:pointer;
+      font-family:Arial,Helvetica,sans-serif; transition:opacity .15s;
+    }
+    .cola-toggle-btn.off { border-color:#ccc !important; color:#ccc !important; }
+    /* PRODUCT TABS */
+    .product-tab {
+      font-size:0.78rem; font-weight:700; padding:4px 14px; border-radius:4px;
+      border:1.5px solid var(--mo-border); cursor:pointer; font-family:Arial,Helvetica,sans-serif;
+      background:var(--mo-white); color:var(--mo-muted);
+    }
+    .product-tab.active { background:var(--mo-black); border-color:var(--mo-black); color:#fff; }
+    .product-tab:disabled { opacity:.35; cursor:not-allowed; }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="mo-nav">
+  <div class="mo-nav-left">
+    <span class="mo-nav-brand">BOST · SLA Dashboard</span>
+    <ul class="mo-nav-links">
+      <li><a href="global.html" class="active">Global</a></li>
+      <li><a href="fijo.html">Fijo</a></li>
+      <li><a href="tv.html" class="disabled" title="Próximamente">TV</a></li>
+    </ul>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <button class="mo-theme-btn" id="mo-theme-btn" aria-label="Cambiar tema">
+      <span id="mo-theme-icon">☽</span>
+      <span id="mo-theme-label">Modo oscuro</span>
+    </button>
+    <svg class="mo-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 68" role="img" aria-label="MasOrange">
+      <rect x="4"  y="24" width="16" height="16" fill="currentColor"/>
+      <rect x="20" y="8"  width="16" height="16" fill="currentColor"/>
+      <rect x="20" y="24" width="16" height="16" fill="currentColor"/>
+      <rect x="20" y="40" width="16" height="16" fill="currentColor"/>
+      <rect x="36" y="24" width="16" height="16" fill="currentColor"/>
+      <circle cx="104" cy="34" r="28" fill="none" stroke="currentColor" stroke-width="10"/>
+    </svg>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div>
+    <div class="hero-title">SLA Global</div>
+    <div class="hero-sub">Lunes, 15/06/2026 &middot; Datos a las 08:30h &middot; Generado 12:54h</div>
+  </div>
+  <div class="hero-pill">✅ CORRECTO</div>
+</section>
+
+<!-- KPI GLOBAL -->
+<div class="kpi-global-block">
+  <div class="kpi-global-number">100.0%</div>
+  <div>
+    <div class="kpi-global-label">Cumplimiento global SLA</div>
+    <div class="kpi-global-detail">0 cumplen · <strong style="color:#2E7D32">0 incumplen</strong> · 0 total computables</div>
+  </div>
+</div>
+
+<!-- CARDS COLAS -->
+<div class="cards-grid">
+
+        <div class="kpi-card">
+          <div class="kpi-card-header">
+            <span class="kpi-card-label">STFIJO-ZL</span>
+            <span class="kpi-card-sla">SLA 24h</span>
+          </div>
+          <div class="kpi-card-pct" style="color:#2E7D32">100.0%</div>
+          <div class="kpi-bar-bg">
+            <div class="kpi-bar-fill" style="background:#2E7D32;width:100.0%"></div>
+          </div>
+          <div class="kpi-card-detail">0 incumplen · 0 computables</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card-header">
+            <span class="kpi-card-label">SGI</span>
+            <span class="kpi-card-sla">SLA 48h</span>
+          </div>
+          <div class="kpi-card-pct" style="color:#2E7D32">100.0%</div>
+          <div class="kpi-bar-bg">
+            <div class="kpi-bar-fill" style="background:#2E7D32;width:100.0%"></div>
+          </div>
+          <div class="kpi-card-detail">0 incumplen · 0 computables</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card-header">
+            <span class="kpi-card-label">GIOR</span>
+            <span class="kpi-card-sla">SLA 24h</span>
+          </div>
+          <div class="kpi-card-pct" style="color:#2E7D32">100.0%</div>
+          <div class="kpi-bar-bg">
+            <div class="kpi-bar-fill" style="background:#2E7D32;width:100.0%"></div>
+          </div>
+          <div class="kpi-card-detail">0 incumplen · 0 computables</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card-header">
+            <span class="kpi-card-label">Logística</span>
+            <span class="kpi-card-sla">SLA 24h</span>
+          </div>
+          <div class="kpi-card-pct" style="color:#2E7D32">100.0%</div>
+          <div class="kpi-bar-bg">
+            <div class="kpi-bar-fill" style="background:#2E7D32;width:100.0%"></div>
+          </div>
+          <div class="kpi-card-detail">0 incumplen · 0 computables</div>
+        </div>
+</div>
+
+<!-- GRÁFICA EVOLUTIVA -->
+<div class="section-block">
+  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+    <div class="section-title">Evolución del cumplimiento</div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <!-- Producto -->
+      <div style="display:flex;gap:5px">
+        <button class="product-tab active" disabled title="Producto activo">Fijo</button>
+        <button class="product-tab" disabled title="Próximamente">TV</button>
+      </div>
+      <div style="width:1px;height:20px;background:var(--mo-border)"></div>
+      <!-- Periodo -->
+      <div class="chart-filters">
+        <button class="chart-filter-btn active" data-days="7">Semana</button>
+        <button class="chart-filter-btn" data-days="30">Mes</button>
+        <button class="chart-filter-btn" data-days="0">Todo</button>
+      </div>
+    </div>
+  </div>
+  <!-- Cola toggles -->
+  <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+    <span style="font-size:0.7rem;color:var(--mo-muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em">Colas:</span>
+    <button class="cola-toggle-btn" data-cola="stfijo" style="border-color:#FF5900;color:#FF5900">STFIJO-ZL</button>
+    <button class="cola-toggle-btn" data-cola="sgi"    style="border-color:#1a73e8;color:#1a73e8">SGI</button>
+    <button class="cola-toggle-btn" data-cola="gior"   style="border-color:#0b8043;color:#0b8043">GIOR</button>
+    <button class="cola-toggle-btn" data-cola="logistica" style="border-color:#9c27b0;color:#9c27b0">Log&iacute;stica</button>
+  </div>
+  <div class="section-subtitle">% cumplimiento diario · Objetivo: 80% (l&iacute;nea amarilla)</div>
+  <svg id="sla-chart-svg" xmlns="http://www.w3.org/2000/svg" style="width:100%;font-family:Arial,Helvetica,sans-serif" viewBox="0 0 560 220"></svg>
+  <div class="chart-source">Datos reales de los últimos 4 días (puente HTML · <a href="https://jiranext.masorange.es/browse/BST-13142" style="color:#FF5900">BST-13142</a> para histórico oficial en BQ).</div>
+</div>
+
+<!-- ANÁLISIS -->
+<div class="section-block">
+  <div class="section-title">Análisis del día</div>
+  <ul class="analisis-list" style="margin-top:12px">
+    <li>La cola con mayor incumplimiento hoy es <strong>STFIJO-ZL</strong> (0 de 0 tickets, 100.0% cumplimiento).</li><li>Sin tickets crónicos (&gt;96h) en STFIJO-ZL hoy.</li><li>STFIJO-ZL lidera con 100.0% de cumplimiento.</li>
+  </ul>
+</div>
+
+<!-- FOOTER -->
+<footer class="mo-footer">
+  <div>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 68" width="48" style="color:#fff;vertical-align:middle" aria-label="MasOrange">
+      <rect x="4"  y="24" width="16" height="16" fill="currentColor"/>
+      <rect x="20" y="8"  width="16" height="16" fill="currentColor"/>
+      <rect x="20" y="24" width="16" height="16" fill="currentColor"/>
+      <rect x="20" y="40" width="16" height="16" fill="currentColor"/>
+      <rect x="36" y="24" width="16" height="16" fill="currentColor"/>
+      <circle cx="104" cy="34" r="28" fill="none" stroke="currentColor" stroke-width="10"/>
+    </svg>
+    <span style="margin-left:10px">Generado automáticamente · BOST MasOrange · 15/06/2026 12:54h</span>
+  </div>
+  <div class="mo-footer-links">
+    <a href="fijo.html">Informe Fijo</a>
+    <a href="tv.html">TV (próx.)</a>
+  </div>
+</footer>
+
+<script>
+  (function() {
+    var html  = document.documentElement;
+    var btn   = document.getElementById('mo-theme-btn');
+    var icon  = document.getElementById('mo-theme-icon');
+    var label = document.getElementById('mo-theme-label');
+    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var stored = localStorage.getItem('mo-theme');
+    var isDark = stored ? stored === 'dark' : prefersDark;
+    function applyTheme(dark) {
+      html.setAttribute('data-theme', dark ? 'dark' : 'light');
+      icon.textContent  = dark ? '☀' : '☽';
+      label.textContent = dark ? 'Modo claro' : 'Modo oscuro';
+      localStorage.setItem('mo-theme', dark ? 'dark' : 'light');
+    }
+    applyTheme(isDark);
+    btn.addEventListener('click', function() { isDark = !isDark; applyTheme(isDark); });
+  })();
+  const CHART_DATA = [{"fecha": "2026-06-10", "stfijo": {"pct": 71.2, "incumple": 348}, "sgi": {"pct": 100.0, "incumple": 0}, "gior": {"pct": 100.0, "incumple": 0}, "logistica": {"pct": 9.9, "incumple": 172}}, {"fecha": "2026-06-11", "stfijo": {"pct": 66.4, "incumple": 413}, "sgi": {"pct": 100.0, "incumple": 0}, "gior": {"pct": 100.0, "incumple": 0}, "logistica": {"pct": 9.0, "incumple": 182}}, {"fecha": "2026-06-12", "stfijo": {"pct": 83.3, "incumple": 190}, "sgi": {"pct": 100.0, "incumple": 0}, "gior": {"pct": 100.0, "incumple": 0}, "logistica": {"pct": 10.9, "incumple": 212}}, {"fecha": "2026-06-15", "stfijo": {"pct": 73.1, "incumple": 235}, "sgi": {"pct": 100.0, "incumple": 0}, "gior": {"pct": 100.0, "incumple": 0}, "logistica": {"pct": 0.8, "incumple": 240}}];
+const COLA_COLORS = {stfijo:'#FF5900',sgi:'#1a73e8',gior:'#0b8043',logistica:'#9c27b0'};
+const COLA_LABELS = {stfijo:'STFIJO-ZL',sgi:'SGI',gior:'GIOR',logistica:'Log\u00edstica'};
+const COLA_KEYS   = ['stfijo','sgi','gior','logistica'];
+var activeDays = 7;
+var visibleColas = {stfijo:true,sgi:true,gior:true,logistica:true};
+
+function drawChart(){
+  var data=activeDays>0?CHART_DATA.slice(-activeDays):CHART_DATA;
+  var svg=document.getElementById('sla-chart-svg');
+  if(!svg)return;
+  if(data.length===0){
+    svg.innerHTML="<text x='50%' y='50%' text-anchor='middle' font-size='13' fill='#aaa'>Sin datos hist\u00f3ricos disponibles a\u00fan.</text>";
+    svg.setAttribute('viewBox','0 0 560 220');return;
+  }
+  var W=560,H=220,PL=38,PR=85,PT=14,PB=32;
+  var cW=W-PL-PR,cH=H-PT-PB,n=data.length;
+  function xFor(i){return PL+(n===1?cW/2:i/(n-1)*cW);}
+  function yFor(p){return PT+cH-(p/100)*cH;}
+  var html='';
+  [0,20,40,60,80,100].forEach(function(pct){
+    var y=yFor(pct).toFixed(1);
+    html+="<line x1='"+PL+"' y1='"+y+"' x2='"+(PL+cW)+"' y2='"+y+"' stroke='#e8e8e8' stroke-width='1'/>";
+    html+="<text x='"+(PL-4)+"' y='"+(parseFloat(y)+3.5).toFixed(1)+"' font-size='9' fill='#aaa' text-anchor='end'>"+pct+"%</text>";
+  });
+  var y80=yFor(80).toFixed(1);
+  html+="<line x1='"+PL+"' y1='"+y80+"' x2='"+(PL+cW)+"' y2='"+y80+"' stroke='#FFD600' stroke-width='1.5' stroke-dasharray='5,4' opacity='0.9'/>";
+  html+="<text x='"+(PL+cW+2)+"' y='"+(parseFloat(y80)+4).toFixed(1)+"' font-size='9' fill='#888'>80%</text>";
+  var step=Math.max(1,Math.floor(n/7));
+  for(var i=0;i<n;i+=step){
+    var d=data[i].fecha.slice(5).replace('-','/');
+    html+="<text x='"+xFor(i).toFixed(1)+"' y='"+(PT+cH+18).toFixed(1)+"' font-size='9' fill='#888' text-anchor='middle'>"+d+"</text>";
+  }
+  if(n>1){
+    var ld=data[n-1].fecha.slice(5).replace('-','/');
+    html+="<text x='"+xFor(n-1).toFixed(1)+"' y='"+(PT+cH+18).toFixed(1)+"' font-size='9' fill='#333' text-anchor='middle' font-weight='bold'>"+ld+"</text>";
+  }
+  COLA_KEYS.forEach(function(key){
+    if(!visibleColas[key])return;
+    var color=COLA_COLORS[key],label=COLA_LABELS[key];
+    var pts=[];
+    data.forEach(function(d,i){if(d[key]){pts.push([xFor(i),yFor(d[key].pct)]);}});
+    if(pts.length<1)return;
+    var dPath=pts.map(function(p,j){return(j===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1);}).join(' ');
+    html+="<path d='"+dPath+"' fill='none' stroke='"+color+"' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'/>";
+    pts.forEach(function(p){html+="<circle cx='"+p[0].toFixed(1)+"' cy='"+p[1].toFixed(1)+"' r='3' fill='"+color+"' stroke='#fff' stroke-width='1.2'/>";});
+    var lp=pts[pts.length-1];
+    html+="<text x='"+(lp[0]+5).toFixed(1)+"' y='"+(lp[1]+4).toFixed(1)+"' font-size='8.5' fill='"+color+"' font-weight='bold'>"+label+"</text>";
+  });
+  svg.setAttribute('viewBox','0 0 '+W+' '+H);
+  svg.innerHTML=html;
+}
+
+document.querySelectorAll('.chart-filter-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.chart-filter-btn').forEach(function(b){b.classList.remove('active');});
+    this.classList.add('active');
+    activeDays=parseInt(this.dataset.days)||0;
+    drawChart();
+  });
+});
+
+document.querySelectorAll('.cola-toggle-btn').forEach(function(btn){
+  var key=btn.dataset.cola;
+  var onColor=COLA_COLORS[key];
+  btn.addEventListener('click',function(){
+    visibleColas[key]=!visibleColas[key];
+    if(visibleColas[key]){
+      this.style.borderColor=onColor;
+      this.style.color=onColor;
+      this.classList.remove('off');
+    } else {
+      this.style.borderColor='#ccc';
+      this.style.color='#ccc';
+      this.classList.add('off');
+    }
+    drawChart();
+  });
+});
+
+drawChart();
+
+</script>
+</body>
+</html>

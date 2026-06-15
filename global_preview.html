@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SLA Dashboard — BOST MasOrange</title>
+  <style>
+    :root {
+      --mo-orange:     #FF5900;
+      --mo-yellow:     #FFD600;
+      --mo-black:      #000000;
+      --mo-white:      #FFFFFF;
+      --mo-gray-light: #F2F2F2;
+      --mo-gray-mid:   #999999;
+      --mo-container:  1200px;
+      --mo-pad:        clamp(1.5rem, 5vw, 4rem);
+      --ok:   #1B5E20;
+      --warn: #E65100;
+      --crit: #B71C1C;
+    }
+    * { font-family: Arial, Helvetica, sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #f5f5f5; color: #000; }
+    a { color: var(--mo-orange); text-decoration: none; }
+
+    .nav {
+      background: #fff;
+      border-bottom: 1px solid #e8e8e8;
+      padding: 0 var(--mo-pad);
+      display: flex; align-items: center; justify-content: space-between;
+      height: 56px; position: sticky; top: 0; z-index: 100;
+    }
+    .nav-links { display: flex; gap: 0; list-style: none; height: 100%; }
+    .nav-links a {
+      display: flex; align-items: center; height: 100%;
+      padding: 0 1.25rem; font-size: 0.875rem; color: #666;
+      border-bottom: 3px solid transparent; transition: color .15s, border-color .15s;
+    }
+    .nav-links a:hover { color: #000; }
+    .nav-links a.active { color: #000; font-weight: 700; border-bottom-color: var(--mo-orange); }
+    .nav-brand { font-size: 0.78rem; font-weight: 700; letter-spacing: .06em;
+                 text-transform: uppercase; color: var(--mo-gray-mid); }
+
+    .hero { background: #000; padding: 3rem var(--mo-pad) 2.5rem; }
+    .hero-inner { max-width: var(--mo-container); margin: 0 auto;
+                  display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1.5rem; }
+    .hero-eyebrow {
+      font-size: 0.7rem; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--mo-orange); margin-bottom: .6rem;
+    }
+    .hero h1 { font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 700; color: #fff; line-height: 1.15; }
+    .hero-sub { font-size: 0.9rem; color: #888; margin-top: .5rem; }
+    .hero-fecha { font-size: 0.78rem; color: #666; margin-bottom: .4rem; }
+    .estado-pill {
+      display: inline-flex; align-items: center; gap: .45rem;
+      padding: .45rem 1rem; border-radius: 2px;
+      font-size: 0.78rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase;
+    }
+    .estado-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    .section { padding: 2.5rem var(--mo-pad); max-width: var(--mo-container); margin: 0 auto; }
+    .section-title {
+      font-size: 0.68rem; font-weight: 700; letter-spacing: .1em;
+      text-transform: uppercase; color: var(--mo-gray-mid); margin-bottom: 1.25rem;
+      padding-bottom: .5rem; border-bottom: 1px solid #e0e0e0;
+    }
+
+    .kpi-global-block {
+      background: #fff; border-radius: 2px;
+      padding: 2rem 2.5rem; display: flex;
+      align-items: center; gap: 3rem; flex-wrap: wrap;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      border-left: 6px solid var(--crit);
+    }
+    .kpi-g-num { font-size: 4rem; font-weight: 700; line-height: 1; color: var(--crit); }
+    .kpi-g-label { font-size: .9rem; color: #666; margin-top: .3rem; }
+    .kpi-g-pct { font-size: 1.6rem; font-weight: 700; color: var(--crit); }
+    .kpi-g-sub { font-size: .78rem; color: #999; }
+    .kpi-g-divider { width: 1px; height: 64px; background: #e0e0e0; flex-shrink: 0; }
+
+    .colas-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem;
+    }
+    @media (max-width: 900px) { .colas-grid { grid-template-columns: repeat(2,1fr); } }
+    @media (max-width: 540px) { .colas-grid { grid-template-columns: 1fr; } }
+
+    .cola-card {
+      background: #fff; border-radius: 2px;
+      padding: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      border-top: 4px solid #ccc;
+    }
+    .cola-name { font-size: .7rem; font-weight: 700; letter-spacing: .07em;
+                 text-transform: uppercase; color: #999; margin-bottom: .5rem; }
+    .cola-incumple { font-size: 2.4rem; font-weight: 700; line-height: 1; }
+    .cola-de { font-size: .8rem; color: #999; margin-top: .15rem; }
+    .cola-pct { font-size: .95rem; font-weight: 700; margin-top: .4rem; }
+    .cola-bar-bg { background: #f0f0f0; border-radius: 2px; height: 6px; margin-top: .6rem; overflow: hidden; }
+    .cola-bar-fill { height: 6px; border-radius: 2px; }
+    .cola-sla { font-size: .7rem; color: #bbb; margin-top: .5rem; }
+
+    .chart-wrap {
+      background: #fff; border-radius: 2px;
+      padding: 1.75rem 2rem 1.5rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+    .chart-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; flex-wrap: wrap; gap: .75rem; }
+    .chart-title { font-size: 1rem; font-weight: 700; color: #000; }
+    .chart-sub { font-size: .78rem; color: #999; margin-top: .2rem; }
+    .chart-legend { display: flex; gap: 1.25rem; align-items: center; flex-wrap: wrap; }
+    .legend-item { display: flex; align-items: center; gap: .4rem; font-size: .75rem; color: #666; }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+    .analisis-block {
+      background: #fff; border-radius: 2px;
+      padding: 1.75rem 2rem;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
+    .analisis-list { list-style: none; display: flex; flex-direction: column; gap: .75rem; }
+    .analisis-item {
+      display: flex; gap: .75rem; align-items: flex-start;
+      font-size: .875rem; color: #333; line-height: 1.55;
+      padding-bottom: .75rem; border-bottom: 1px solid #f5f5f5;
+    }
+    .analisis-item:last-child { border-bottom: none; padding-bottom: 0; }
+    .analisis-icon { font-size: 1rem; flex-shrink: 0; margin-top: .1rem; }
+
+    .footer {
+      background: #000; padding: 1.5rem var(--mo-pad);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 1rem; margin-top: 3rem;
+    }
+    .footer p { font-size: .75rem; color: #555; }
+    .footer-links { display: flex; gap: 1.5rem; }
+    .footer-links a { font-size: .75rem; color: #555; transition: color .15s; }
+    .footer-links a:hover { color: var(--mo-orange); }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <div style="display:flex;align-items:center;gap:2rem">
+      <span class="nav-brand">BOST · SLA Dashboard</span>
+      <ul class="nav-links">
+        <li><a href="global.html" class="active">Global</a></li>
+        <li><a href="fijo.html">Fijo</a></li>
+        <li><a href="tv.html" style="color:#ccc;pointer-events:none" title="Próximamente">TV</a></li>
+      </ul>
+    </div>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 68" width="64" height="auto" aria-label="MasOrange">
+      <rect x="4"  y="24" width="16" height="16" fill="#FF5900"/>
+      <rect x="20" y="8"  width="16" height="16" fill="#FF5900"/>
+      <rect x="20" y="24" width="16" height="16" fill="#FF5900"/>
+      <rect x="20" y="40" width="16" height="16" fill="#FF5900"/>
+      <rect x="36" y="24" width="16" height="16" fill="#FF5900"/>
+      <circle cx="104" cy="34" r="28" fill="none" stroke="#000" stroke-width="10"/>
+    </svg>
+  </nav>
+
+  <!-- HERO negro -->
+  <div class="hero">
+    <div class="hero-inner">
+      <div>
+        <div class="hero-eyebrow">Servicio Técnico · BOST</div>
+        <h1>SLA Dashboard</h1>
+        <p class="hero-sub">Seguimiento diario de tickets sin gestión bajo responsabilidad SAT2</p>
+      </div>
+      <div style="text-align:right">
+        <div class="hero-fecha">Miércoles, 11/06/2026 · Datos a las 08:30h</div>
+        <div class="estado-pill" style="background:rgba(183,28,28,.15);color:#ef5350">
+          <span class="estado-dot" style="background:#ef5350"></span>ESTADO CRÍTICO
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPI GLOBAL -->
+  <div style="background:#f5f5f5;padding:2rem var(--mo-pad) 0">
+    <div style="max-width:var(--mo-container);margin:0 auto">
+      <div class="kpi-global-block">
+        <div>
+          <div class="kpi-g-num">582</div>
+          <div class="kpi-g-label">tickets INCUMPLE de 1.503 computables</div>
+        </div>
+        <div class="kpi-g-divider"></div>
+        <div>
+          <div class="kpi-g-pct">61.3%</div>
+          <div class="kpi-g-sub">cumplimiento global</div>
+        </div>
+        <div class="kpi-g-divider"></div>
+        <div style="font-size:.82rem;color:#666;max-width:280px;line-height:1.6">
+          Tickets bajo responsabilidad activa de SAT2.<br>
+          Excluidos: contrata con cita activa, proveedor externo en gestión.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRID COLAS -->
+  <div class="section" style="padding-top:1.5rem">
+    <div class="section-title">Detalle por cola</div>
+    <div class="colas-grid">
+      <div class="cola-card" style="border-top-color:var(--crit)">
+        <div class="cola-name">STFIJO-ZL · SLA 24h</div>
+        <div class="cola-incumple" style="color:var(--crit)">483</div>
+        <div class="cola-de">de 1.401 tickets</div>
+        <div class="cola-pct" style="color:var(--crit)">65.5% cumplimiento</div>
+        <div class="cola-bar-bg"><div class="cola-bar-fill" style="width:65.5%;background:var(--crit)"></div></div>
+        <div class="cola-sla">Colas principales FIBRA</div>
+      </div>
+      <div class="cola-card" style="border-top-color:var(--crit)">
+        <div class="cola-name">SGI · SLA 48h</div>
+        <div class="cola-incumple" style="color:var(--crit)">4</div>
+        <div class="cola-de">de 6 tickets</div>
+        <div class="cola-pct" style="color:var(--crit)">33.3% cumplimiento</div>
+        <div class="cola-bar-bg"><div class="cola-bar-fill" style="width:33.3%;background:var(--crit)"></div></div>
+        <div class="cola-sla">Servicios de Gestión Integrada</div>
+      </div>
+      <div class="cola-card" style="border-top-color:var(--warn)">
+        <div class="cola-name">GIOR · SLA 24h</div>
+        <div class="cola-incumple" style="color:var(--warn)">1</div>
+        <div class="cola-de">de 4 tickets</div>
+        <div class="cola-pct" style="color:var(--warn)">75.0% cumplimiento</div>
+        <div class="cola-bar-bg"><div class="cola-bar-fill" style="width:75%;background:var(--warn)"></div></div>
+        <div class="cola-sla">Vodafone · gestión por labels</div>
+      </div>
+      <div class="cola-card" style="border-top-color:var(--crit)">
+        <div class="cola-name">Logística · SLA 24h</div>
+        <div class="cola-incumple" style="color:var(--crit)">94</div>
+        <div class="cola-de">de 95 computables</div>
+        <div class="cola-pct" style="color:var(--crit)">1.1% cumplimiento</div>
+        <div class="cola-bar-bg"><div class="cola-bar-fill" style="width:2%;background:var(--crit)"></div></div>
+        <div class="cola-sla">Equipos en tránsito · FIBRA</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GRÁFICA EVOLUCIÓN -->
+  <div class="section" style="padding-top:0">
+    <div class="section-title">Evolución semanal — % cumplimiento por cola</div>
+    <div class="chart-wrap">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Tendencia de cumplimiento</div>
+          <div class="chart-sub">Últimos 7 días · datos de muestra (histórico en desarrollo — BST-13142)</div>
+        </div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#FF5900"></div>STFIJO-ZL</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#1565C0"></div>SGI</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#2E7D32"></div>GIOR</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#6A1B9A"></div>Logística</div>
+        </div>
+      </div>
+      <svg viewBox="0 0 760 220" xmlns="http://www.w3.org/2000/svg" style="width:100%;max-width:760px;display:block">
+        <rect width="760" height="220" fill="#fff"/>
+        <!-- Grid lines -->
+        <line x1="60" y1="20"  x2="740" y2="20"  stroke="#f0f0f0" stroke-width="1"/>
+        <line x1="60" y1="57"  x2="740" y2="57"  stroke="#f0f0f0" stroke-width="1"/>
+        <line x1="60" y1="94"  x2="740" y2="94"  stroke="#f0f0f0" stroke-width="1"/>
+        <line x1="60" y1="131" x2="740" y2="131" stroke="#f0f0f0" stroke-width="1"/>
+        <line x1="60" y1="168" x2="740" y2="168" stroke="#f0f0f0" stroke-width="1"/>
+        <line x1="60" y1="205" x2="740" y2="205" stroke="#f0f0f0" stroke-width="1"/>
+        <!-- Objetivo 80% -->
+        <line x1="60" y1="57" x2="740" y2="57" stroke="#FFD600" stroke-width="1.5" stroke-dasharray="6,4"/>
+        <text x="744" y="61" font-size="9" fill="#FFD600" font-family="Arial">80%</text>
+        <!-- Labels Y -->
+        <text x="52" y="24"  font-size="10" fill="#bbb" text-anchor="end" font-family="Arial">100%</text>
+        <text x="52" y="61"  font-size="10" fill="#bbb" text-anchor="end" font-family="Arial">80%</text>
+        <text x="52" y="98"  font-size="10" fill="#bbb" text-anchor="end" font-family="Arial">60%</text>
+        <text x="52" y="135" font-size="10" fill="#bbb" text-anchor="end" font-family="Arial">40%</text>
+        <text x="52" y="172" font-size="10" fill="#bbb" text-anchor="end" font-family="Arial">20%</text>
+        <text x="52" y="209" font-size="10" fill="#bbb" text-anchor="end" font-family="Arial">0%</text>
+        <!-- Labels X -->
+        <text x="100" y="218" font-size="10" fill="#bbb" text-anchor="middle" font-family="Arial">05/06</text>
+        <text x="210" y="218" font-size="10" fill="#bbb" text-anchor="middle" font-family="Arial">06/06</text>
+        <text x="320" y="218" font-size="10" fill="#bbb" text-anchor="middle" font-family="Arial">07/06</text>
+        <text x="430" y="218" font-size="10" fill="#bbb" text-anchor="middle" font-family="Arial">08/06</text>
+        <text x="540" y="218" font-size="10" fill="#bbb" text-anchor="middle" font-family="Arial">09/06</text>
+        <text x="650" y="218" font-size="10" fill="#bbb" text-anchor="middle" font-family="Arial">10/06</text>
+        <text x="720" y="218" font-size="10" fill="#bbb" text-anchor="middle" font-family="Arial">Hoy</text>
+        <!-- STFIJO naranja ~65% -->
+        <polyline points="100,83 210,87 320,87 430,83 540,85 650,87 720,84"
+          fill="none" stroke="#FF5900" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="100" cy="83" r="4" fill="#FF5900"/><circle cx="210" cy="87" r="4" fill="#FF5900"/>
+        <circle cx="320" cy="87" r="4" fill="#FF5900"/><circle cx="430" cy="83" r="4" fill="#FF5900"/>
+        <circle cx="540" cy="85" r="4" fill="#FF5900"/><circle cx="650" cy="87" r="4" fill="#FF5900"/>
+        <circle cx="720" cy="84" r="5" fill="#FF5900" stroke="#fff" stroke-width="2"/>
+        <!-- SGI azul ~33–50% -->
+        <polyline points="100,113 210,150 320,113 430,150 540,150 650,150 720,150"
+          fill="none" stroke="#1565C0" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="100" cy="113" r="4" fill="#1565C0"/><circle cx="210" cy="150" r="4" fill="#1565C0"/>
+        <circle cx="320" cy="113" r="4" fill="#1565C0"/><circle cx="430" cy="150" r="4" fill="#1565C0"/>
+        <circle cx="540" cy="150" r="4" fill="#1565C0"/><circle cx="650" cy="150" r="4" fill="#1565C0"/>
+        <circle cx="720" cy="150" r="5" fill="#1565C0" stroke="#fff" stroke-width="2"/>
+        <!-- GIOR verde ~75–100% -->
+        <polyline points="100,20 210,20 320,57 430,20 540,57 650,57 720,57"
+          fill="none" stroke="#2E7D32" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="100" cy="20"  r="4" fill="#2E7D32"/><circle cx="210" cy="20"  r="4" fill="#2E7D32"/>
+        <circle cx="320" cy="57"  r="4" fill="#2E7D32"/><circle cx="430" cy="20"  r="4" fill="#2E7D32"/>
+        <circle cx="540" cy="57"  r="4" fill="#2E7D32"/><circle cx="650" cy="57"  r="4" fill="#2E7D32"/>
+        <circle cx="720" cy="57"  r="5" fill="#2E7D32" stroke="#fff" stroke-width="2"/>
+        <!-- Logística morado ~1% -->
+        <polyline points="100,203 210,204 320,203 430,204 540,204 650,204 720,204"
+          fill="none" stroke="#6A1B9A" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="100" cy="203" r="4" fill="#6A1B9A"/>
+        <circle cx="720" cy="204" r="5" fill="#6A1B9A" stroke="#fff" stroke-width="2"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ANÁLISIS -->
+  <div class="section" style="padding-top:0">
+    <div class="section-title">Análisis del día</div>
+    <div class="analisis-block">
+      <ul class="analisis-list">
+        <li class="analisis-item">
+          <span class="analisis-icon">🔴</span>
+          <span>La cola con mayor incumplimiento es <strong>Logística</strong> (94 de 95 tickets, 1.1% cumplimiento). Situación estructuralmente crítica — requiere revisión de proceso.</span>
+        </li>
+        <li class="analisis-item">
+          <span class="analisis-icon">⚠️</span>
+          <span><strong>9 tickets en STFIJO-ZL superan las 96h sin gestión</strong>. Casos crónicos que requieren revisión inmediata del equipo asignado.</span>
+        </li>
+        <li class="analisis-item">
+          <span class="analisis-icon">📉</span>
+          <span>El cumplimiento de STFIJO-ZL lleva 7 días estabilizado en la franja 64–68%, sin mejoría apreciable. Se recomienda análisis de causa raíz.</span>
+        </li>
+        <li class="analisis-item">
+          <span class="analisis-icon">✅</span>
+          <span>GIOR es la única cola por encima del umbral de atención (75%). La integración con Vodafone funciona correctamente.</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 68" width="56" aria-label="MasOrange">
+      <rect x="4"  y="24" width="16" height="16" fill="#FF5900"/>
+      <rect x="20" y="8"  width="16" height="16" fill="#FF5900"/>
+      <rect x="20" y="24" width="16" height="16" fill="#FF5900"/>
+      <rect x="20" y="40" width="16" height="16" fill="#FF5900"/>
+      <rect x="36" y="24" width="16" height="16" fill="#FF5900"/>
+      <circle cx="104" cy="34" r="28" fill="none" stroke="#555" stroke-width="10"/>
+    </svg>
+    <p>Generado automáticamente · BOST MasOrange · 11/06/2026 09:00h</p>
+    <div class="footer-links">
+      <a href="#">Informe Fijo</a>
+      <a href="#">Informe TV</a>
+    </div>
+  </footer>
+
+</body>
+</html>
