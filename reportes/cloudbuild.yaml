@@ -1,0 +1,21 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'europe-west1-docker.pkg.dev/TU_PROYECTO_GCP/bost/sla-fijo:latest', '.']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'europe-west1-docker.pkg.dev/TU_PROYECTO_GCP/bost/sla-fijo:latest']
+
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - bost-sla-fijo
+      - --image=europe-west1-docker.pkg.dev/TU_PROYECTO_GCP/bost/sla-fijo:latest
+      - --region=europe-west1
+      - --platform=managed
+      - --no-allow-unauthenticated
+      - --project=TU_PROYECTO_GCP
+
+images:
+  - 'europe-west1-docker.pkg.dev/TU_PROYECTO_GCP/bost/sla-fijo:latest'

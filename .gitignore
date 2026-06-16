@@ -1,0 +1,12 @@
+# Informes diarios generados (no versionar, cambian cada día)
+reportes/informe_*.html
+reportes/informe_sla.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Entorno local
+.env
+*.log
