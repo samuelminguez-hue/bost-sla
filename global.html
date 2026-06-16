@@ -48,17 +48,17 @@
     .hero-pill {
       padding:6px 16px; border-radius:20px; font-size:0.85rem;
       font-weight:700; color:#fff;
-      background:#1B5E20;
+      background:#E65100;
     }
 
     /* KPI GLOBAL */
     .kpi-global-block {
       background:var(--mo-white); border-radius:8px; margin:20px 20px 0;
       padding:20px 24px; display:flex; align-items:center; gap:24px;
-      border-left:5px solid #2E7D32;
+      border-left:5px solid #FF5900;
       box-shadow:0 1px 4px rgba(0,0,0,.06);
     }
-    .kpi-global-number { font-size:2.8rem; font-weight:700; color:#2E7D32; line-height:1; }
+    .kpi-global-number { font-size:2.8rem; font-weight:700; color:#FF5900; line-height:1; }
     .kpi-global-label { font-size:0.9rem; color:var(--mo-muted); }
     .kpi-global-detail { font-size:0.8rem; color:var(--mo-muted); margin-top:3px; }
 
@@ -184,17 +184,17 @@
 <section class="hero">
   <div>
     <div class="hero-title">SLA Global</div>
-    <div class="hero-sub">Martes, 16/06/2026 &middot; Datos a las 08:30h &middot; Generado 07:52h</div>
+    <div class="hero-sub">Martes, 16/06/2026 &middot; Datos a las 08:30h &middot; Generado 10:44h</div>
   </div>
-  <div class="hero-pill">✅ CORRECTO</div>
+  <div class="hero-pill">⚠️ ATENCIÓN</div>
 </section>
 
 <!-- KPI GLOBAL -->
 <div class="kpi-global-block">
-  <div class="kpi-global-number">100.0%</div>
+  <div class="kpi-global-number">74.7%</div>
   <div>
     <div class="kpi-global-label">Cumplimiento global SLA</div>
-    <div class="kpi-global-detail">0 cumplen · <strong style="color:#2E7D32">0 incumplen</strong> · 0 total computables</div>
+    <div class="kpi-global-detail">929 cumplen · <strong style="color:#FF5900">314 incumplen</strong> · 1243 total computables</div>
   </div>
 </div>
 
@@ -206,11 +206,11 @@
             <span class="kpi-card-label">STFIJO-ZL</span>
             <span class="kpi-card-sla">SLA 24h</span>
           </div>
-          <div class="kpi-card-pct" style="color:#2E7D32">100.0%</div>
+          <div class="kpi-card-pct" style="color:#2E7D32">91.3%</div>
           <div class="kpi-bar-bg">
-            <div class="kpi-bar-fill" style="background:#2E7D32;width:100.0%"></div>
+            <div class="kpi-bar-fill" style="background:#2E7D32;width:91.3%"></div>
           </div>
-          <div class="kpi-card-detail">0 incumplen · 0 computables</div>
+          <div class="kpi-card-detail">86 incumplen · 984 computables</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-card-header">
@@ -221,7 +221,7 @@
           <div class="kpi-bar-bg">
             <div class="kpi-bar-fill" style="background:#2E7D32;width:100.0%"></div>
           </div>
-          <div class="kpi-card-detail">0 incumplen · 0 computables</div>
+          <div class="kpi-card-detail">0 incumplen · 1 computables</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-card-header">
@@ -239,11 +239,11 @@
             <span class="kpi-card-label">Logística</span>
             <span class="kpi-card-sla">SLA 24h</span>
           </div>
-          <div class="kpi-card-pct" style="color:#2E7D32">100.0%</div>
+          <div class="kpi-card-pct" style="color:#C62828">11.6%</div>
           <div class="kpi-bar-bg">
-            <div class="kpi-bar-fill" style="background:#2E7D32;width:100.0%"></div>
+            <div class="kpi-bar-fill" style="background:#C62828;width:11.6%"></div>
           </div>
-          <div class="kpi-card-detail">0 incumplen · 0 computables</div>
+          <div class="kpi-card-detail">228 incumplen · 258 computables</div>
         </div>
 </div>
 
@@ -282,14 +282,14 @@
   </div>
   <div class="section-subtitle">% cumplimiento diario &middot; Objetivo: 80% (l&iacute;nea amarilla)</div>
   <svg id="sla-chart-svg" xmlns="http://www.w3.org/2000/svg" style="width:100%;font-family:Arial,Helvetica,sans-serif" viewBox="0 0 560 220"></svg>
-  <div class="chart-source">Datos reales de los últimos 4 días (puente HTML · <a href="https://jiranext.masorange.es/browse/BST-13142" style="color:#FF5900">BST-13142</a> para histórico oficial en BQ).</div>
+  <div class="chart-source">Datos reales de los últimos 5 días (puente HTML · <a href="https://jiranext.masorange.es/browse/BST-13142" style="color:#FF5900">BST-13142</a> para histórico oficial en BQ).</div>
 </div>
 
 <!-- ANÁLISIS -->
 <div class="section-block">
   <div class="section-title">Análisis del día</div>
   <ul class="analisis-list" style="margin-top:12px">
-    <li>La cola con mayor incumplimiento hoy es <strong>STFIJO-ZL</strong> (0 de 0 tickets, 100.0% cumplimiento).</li><li>Sin tickets crónicos (&gt;96h) en STFIJO-ZL hoy.</li><li>STFIJO-ZL lidera con 100.0% de cumplimiento.</li>
+    <li>La cola con mayor incumplimiento hoy es <strong>Logística</strong> (228 de 258 tickets, 11.6% cumplimiento).</li><li><strong>3 tickets en STFIJO-ZL superan las 96h sin gestión</strong>: <a href="https://tgjira.masmovil.com/browse/ATC-8365058" style="color:#FF5900;text-decoration:none">ATC-8365058</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8213670" style="color:#FF5900;text-decoration:none">ATC-8213670</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8430968" style="color:#FF5900;text-decoration:none">ATC-8430968</a>.</li><li>SGI lidera con 100.0% de cumplimiento.</li>
   </ul>
 </div>
 
@@ -304,7 +304,7 @@
       <rect x="36" y="24" width="16" height="16" fill="currentColor"/>
       <circle cx="104" cy="34" r="28" fill="none" stroke="currentColor" stroke-width="10"/>
     </svg>
-    <span style="margin-left:10px">Generado automáticamente · BOST MasOrange · 16/06/2026 07:52h</span>
+    <span style="margin-left:10px">Generado automáticamente · BOST MasOrange · 16/06/2026 10:44h</span>
   </div>
   <div class="mo-footer-links">
     <a href="fijo.html">Informe Fijo</a>
@@ -330,7 +330,7 @@
     applyTheme(isDark);
     btn.addEventListener('click', function() { isDark = !isDark; applyTheme(isDark); });
   })();
-  const CHART_DATA = [{"fecha": "2026-06-10", "stfijo": {"pct": 71.2, "incumple": 348}, "sgi": {"pct": 100.0, "incumple": 0}, "gior": {"pct": 100.0, "incumple": 0}, "logistica": {"pct": 9.9, "incumple": 172}}, {"fecha": "2026-06-11", "stfijo": {"pct": 66.4, "incumple": 413}, "sgi": {"pct": 100.0, "incumple": 0}, "gior": {"pct": 100.0, "incumple": 0}, "logistica": {"pct": 9.0, "incumple": 182}}, {"fecha": "2026-06-12", "stfijo": {"pct": 83.3, "incumple": 190}, "sgi": {"pct": 100.0, "incumple": 0}, "gior": {"pct": 100.0, "incumple": 0}, "logistica": {"pct": 10.9, "incumple": 212}}, {"fecha": "2026-06-15", "stfijo": {"pct": 73.1, "incumple": 235}, "sgi": {"pct": 100.0, "incumple": 0}, "gior": {"pct": 100.0, "incumple": 0}, "logistica": {"pct": 0.8, "incumple": 240}}];
+  const CHART_DATA = [{"fecha": "2026-06-10", "stfijo": {"pct": 71.2, "incumple": 348}, "sgi": {"pct": 100.0, "incumple": 0}, "gior": {"pct": 100.0, "incumple": 0}, "logistica": {"pct": 9.9, "incumple": 172}}, {"fecha": "2026-06-11", "stfijo": {"pct": 66.4, "incumple": 413}, "sgi": {"pct": 100.0, "incumple": 0}, "gior": {"pct": 100.0, "incumple": 0}, "logistica": {"pct": 9.0, "incumple": 182}}, {"fecha": "2026-06-12", "stfijo": {"pct": 83.3, "incumple": 190}, "sgi": {"pct": 100.0, "incumple": 0}, "gior": {"pct": 100.0, "incumple": 0}, "logistica": {"pct": 10.9, "incumple": 212}}, {"fecha": "2026-06-15", "stfijo": {"pct": 73.1, "incumple": 235}, "sgi": {"pct": 100.0, "incumple": 0}, "gior": {"pct": 100.0, "incumple": 0}, "logistica": {"pct": 0.8, "incumple": 240}}, {"fecha": "2026-06-16", "stfijo": {"pct": 91.3, "incumple": 86}, "sgi": {"pct": 100.0, "incumple": 0}, "gior": {"pct": 100.0, "incumple": 0}, "logistica": {"pct": 11.6, "incumple": 228}}];
 const COLA_COLORS = {stfijo:'#FF5900',sgi:'#1a73e8',gior:'#0b8043',logistica:'#9c27b0'};
 const COLA_LABELS = {stfijo:'STFIJO-ZL',sgi:'SGI',gior:'GIOR',logistica:'Log\u00edstica'};
 const COLA_KEYS   = ['stfijo','sgi','gior','logistica'];
