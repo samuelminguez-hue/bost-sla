@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>BOST · SLA Global Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <style>
     :root {
       --mo-orange:#FF5900; --mo-yellow:#FFD600;
@@ -257,7 +258,9 @@
     </div>
   </div>
   <div class="section-subtitle">% cumplimiento diario &middot; Objetivo: 80% (l&iacute;nea amarilla)</div>
-  <svg id="sla-chart-svg" xmlns="http://www.w3.org/2000/svg" style="width:100%;font-family:Arial,Helvetica,sans-serif" viewBox="0 0 560 220"></svg>
+  <div style="position:relative;height:240px">
+    <canvas id="sla-chart"></canvas>
+  </div>
   <div class="chart-source">Datos reales de los últimos 5 días (puente HTML · <a href="https://jiranext.masorange.es/browse/BST-13142" style="color:#FF5900">BST-13142</a> para histórico oficial en BQ).</div>
 </div>
 
@@ -313,79 +316,120 @@ const COLA_KEYS   = ['fijo','logistica'];
 var activeDays = 7;
 var visibleColas = {fijo:true,logistica:true};
 var chartMode = 'colas';
+var slaChart = null;
 
-function cssVar(name){
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+function isDarkMode(){
+  return document.documentElement.getAttribute('data-theme') === 'dark';
+}
+
+function buildChartConfig(data){
+  var dark = isDarkMode();
+  var gridColor = dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)';
+  var textColor = dark ? '#aaa' : '#666';
+  var labels = data.map(function(d){ return d.fecha.slice(5).replace('-','/'); });
+  var datasets = [];
+
+  datasets.push({
+    label: 'Objetivo 80%',
+    data: data.map(function(){ return 80; }),
+    borderColor: '#FFD600',
+    borderWidth: 1.5,
+    borderDash: [5,4],
+    pointRadius: 0,
+    fill: false,
+    tension: 0,
+    order: 99
+  });
+
+  if(chartMode === 'total'){
+    var pts = data.map(function(d){
+      var sum=0,cnt=0;
+      COLA_KEYS.forEach(function(k){ if(d[k]){ sum+=d[k].pct; cnt++; } });
+      return cnt>0 ? Math.round(sum/cnt*10)/10 : null;
+    });
+    datasets.push({
+      label: 'Total',
+      data: pts,
+      borderColor: dark ? '#fff' : '#333',
+      backgroundColor: dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+      borderWidth: 2.5,
+      pointRadius: 4,
+      pointHoverRadius: 6,
+      fill: true,
+      tension: 0.3
+    });
+  } else {
+    COLA_KEYS.forEach(function(key){
+      if(!visibleColas[key]) return;
+      var pts = data.map(function(d){ return d[key] ? d[key].pct : null; });
+      var inc = data.map(function(d){ return d[key] ? d[key].incumple : null; });
+      datasets.push({
+        label: COLA_LABELS[key],
+        data: pts,
+        borderColor: COLA_COLORS[key],
+        backgroundColor: COLA_COLORS[key] + '18',
+        borderWidth: 2,
+        pointRadius: 4,
+        pointHoverRadius: 7,
+        fill: false,
+        tension: 0.3,
+        _incumple: inc
+      });
+    });
+  }
+
+  return {
+    type: 'line',
+    data: { labels: labels, datasets: datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: dark ? '#1a1a1a' : '#fff',
+          titleColor: dark ? '#eee' : '#111',
+          bodyColor: dark ? '#ccc' : '#444',
+          borderColor: dark ? '#333' : '#e0e0e0',
+          borderWidth: 1,
+          padding: 10,
+          callbacks: {
+            label: function(ctx){
+              if(ctx.dataset.label === 'Objetivo 80%') return null;
+              var inc = ctx.dataset._incumple ? ctx.dataset._incumple[ctx.dataIndex] : null;
+              var line = ' ' + ctx.dataset.label + ': ' + ctx.parsed.y + '%';
+              if(inc !== null) line += ' (' + inc + ' incumple)';
+              return line;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: gridColor },
+          ticks: { color: textColor, font: { family: 'Arial', size: 10 } }
+        },
+        y: {
+          min: 0, max: 100,
+          grid: { color: gridColor },
+          ticks: {
+            color: textColor, font: { family: 'Arial', size: 10 },
+            callback: function(v){ return v + '%'; }
+          }
+        }
+      }
+    }
+  };
 }
 
 function drawChart(){
-  var data=activeDays>0?CHART_DATA.slice(-activeDays):CHART_DATA;
-  var svg=document.getElementById('sla-chart-svg');
-  if(!svg)return;
-  if(data.length===0){
-    svg.innerHTML="<text x='50%' y='50%' text-anchor='middle' font-size='13' fill='#aaa'>Sin datos hist\u00f3ricos disponibles a\u00fan.</text>";
-    svg.setAttribute('viewBox','0 0 560 220');return;
-  }
-  var W=560,H=220,PL=38,PR=90,PT=14,PB=32;
-  var cW=W-PL-PR,cH=H-PT-PB,n=data.length;
-  function xFor(i){return PL+(n===1?cW/2:i/(n-1)*cW);}
-  function yFor(p){return PT+cH-(p/100)*cH;}
-  var gridC=cssVar('--mo-border')||'#e0e0e0';
-  var mutedC=cssVar('--mo-muted')||'#666';
-  var textC=cssVar('--mo-text')||'#111';
-  var html='';
-  [0,20,40,60,80,100].forEach(function(pct){
-    var y=yFor(pct).toFixed(1);
-    html+="<line x1='"+PL+"' y1='"+y+"' x2='"+(PL+cW)+"' y2='"+y+"' stroke='"+gridC+"' stroke-width='1'/>";
-    html+="<text x='"+(PL-4)+"' y='"+(parseFloat(y)+3.5).toFixed(1)+"' font-size='9' fill='"+mutedC+"' text-anchor='end'>"+pct+"%</text>";
-  });
-  var y80=yFor(80).toFixed(1);
-  html+="<line x1='"+PL+"' y1='"+y80+"' x2='"+(PL+cW)+"' y2='"+y80+"' stroke='#FFD600' stroke-width='1.5' stroke-dasharray='5,4' opacity='0.9'/>";
-  html+="<text x='"+(PL+cW+2)+"' y='"+(parseFloat(y80)+4).toFixed(1)+"' font-size='9' fill='#FFD600'>80%</text>";
-  var step=Math.max(1,Math.floor(n/7));
-  for(var i=0;i<n;i+=step){
-    var d=data[i].fecha.slice(5).replace('-','/');
-    html+="<text x='"+xFor(i).toFixed(1)+"' y='"+(PT+cH+18).toFixed(1)+"' font-size='9' fill='"+mutedC+"' text-anchor='middle'>"+d+"</text>";
-  }
-  if(n>1){
-    var ld=data[n-1].fecha.slice(5).replace('-','/');
-    html+="<text x='"+xFor(n-1).toFixed(1)+"' y='"+(PT+cH+18).toFixed(1)+"' font-size='9' fill='"+textC+"' text-anchor='middle' font-weight='bold'>"+ld+"</text>";
-  }
-  var series=[];
-  if(chartMode==='total'){
-    var pts=[];
-    data.forEach(function(d,i){
-      var sum=0,cnt=0;
-      COLA_KEYS.forEach(function(k){if(d[k]){sum+=d[k].pct;cnt++;}});
-      if(cnt>0)pts.push([xFor(i),yFor(sum/cnt)]);
-    });
-    if(pts.length>0)series.push({pts:pts,color:'#ffffff',label:'Total',sw:2.5});
-  } else {
-    COLA_KEYS.forEach(function(key){
-      if(!visibleColas[key])return;
-      var pts=[];
-      data.forEach(function(d,i){if(d[key])pts.push([xFor(i),yFor(d[key].pct)]);});
-      if(pts.length>0)series.push({pts:pts,color:COLA_COLORS[key],label:COLA_LABELS[key],sw:2});
-    });
-  }
-  series.forEach(function(s){
-    var dPath=s.pts.map(function(p,j){return(j===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1);}).join(' ');
-    html+="<path d='"+dPath+"' fill='none' stroke='"+s.color+"' stroke-width='"+s.sw+"' stroke-linejoin='round' stroke-linecap='round'/>";
-    s.pts.forEach(function(p){html+="<circle cx='"+p[0].toFixed(1)+"' cy='"+p[1].toFixed(1)+"' r='3' fill='"+s.color+"' stroke='#fff' stroke-width='1.2'/>";});
-  });
-  var labels=series.map(function(s){
-    var lp=s.pts[s.pts.length-1];
-    return {x:lp[0],y:lp[1],color:s.color,label:s.label};
-  });
-  labels.sort(function(a,b){return a.y-b.y;});
-  for(var i=1;i<labels.length;i++){
-    if(labels[i].y<labels[i-1].y+13)labels[i].y=labels[i-1].y+13;
-  }
-  labels.forEach(function(item){
-    html+="<text x='"+(item.x+5).toFixed(1)+"' y='"+(item.y+4).toFixed(1)+"' font-size='8.5' fill='"+item.color+"' font-weight='bold'>"+item.label+"</text>";
-  });
-  svg.setAttribute('viewBox','0 0 '+W+' '+H);
-  svg.innerHTML=html;
+  var data = activeDays > 0 ? CHART_DATA.slice(-activeDays) : CHART_DATA;
+  var ctx = document.getElementById('sla-chart');
+  if(!ctx) return;
+  if(slaChart){ slaChart.destroy(); slaChart = null; }
+  if(data.length === 0) return;
+  slaChart = new Chart(ctx, buildChartConfig(data));
 }
 
 document.querySelectorAll('.chart-mode-btn').forEach(function(btn){
@@ -425,6 +469,9 @@ document.querySelectorAll('.cola-toggle-btn').forEach(function(btn){
     drawChart();
   });
 });
+
+document.getElementById('mo-theme-btn') && document.getElementById('mo-theme-btn')
+  .addEventListener('click', function(){ setTimeout(drawChart, 50); });
 
 drawChart();
 

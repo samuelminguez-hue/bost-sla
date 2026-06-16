@@ -197,6 +197,46 @@
       background: var(--bg-card) !important;
     }
     .toggle-row:hover .toggle-cell { background: var(--bg-strip) !important; }
+    /* Filas críticas >96h */
+    .row-critico td { background: rgba(198,40,40,.07) !important; }
+    .row-critico:hover td { background: rgba(198,40,40,.14) !important; }
+    [data-theme="dark"] .row-critico td { background: rgba(198,40,40,.15) !important; }
+    /* Barra de filtros */
+    .tabla-toolbar {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      padding: 8px 0 10px;
+    }
+    .tabla-toolbar input {
+      font-family: Arial,Helvetica,sans-serif; font-size: 0.8rem;
+      padding: 4px 10px; border: 1.5px solid var(--border-subtle);
+      border-radius: 4px; background: var(--bg-card); color: var(--text-main);
+      width: 200px;
+    }
+    .tabla-toolbar input:focus { outline: none; border-color: var(--mo-orange); }
+    .tabla-filter-btn {
+      font-family: Arial,Helvetica,sans-serif; font-size: 0.75rem; font-weight: 700;
+      padding: 4px 12px; border-radius: 4px; cursor: pointer;
+      border: 1.5px solid var(--border-subtle);
+      background: var(--bg-card); color: var(--text-muted);
+      transition: border-color .15s, color .15s, background .15s;
+    }
+    .tabla-filter-btn:hover { border-color: var(--mo-orange); color: var(--mo-orange); }
+    .tabla-filter-btn.active { background: var(--mo-orange); border-color: var(--mo-orange); color: #fff; }
+    .btn-export-csv {
+      font-family: Arial,Helvetica,sans-serif; font-size: 0.75rem; font-weight: 700;
+      padding: 4px 14px; border-radius: 4px; cursor: pointer;
+      border: 1.5px solid #2E7D32; background: var(--bg-card); color: #2E7D32;
+      margin-left: auto; transition: background .15s, color .15s;
+    }
+    .btn-export-csv:hover { background: #2E7D32; color: #fff; }
+    .tabla-count { font-size: 0.75rem; color: var(--text-muted); }
+    #refresh-badge {
+      position: fixed; bottom: 16px; right: 16px; z-index: 200;
+      background: #000; color: #aaa; font-size: 0.72rem;
+      padding: 4px 10px; border-radius: 20px; border: 1px solid #333;
+      cursor: pointer;
+    }
+    #refresh-badge:hover { color: #fff; }
 
     /* ── FOOTER ─────────────────────────────────────────────────── */
     .mo-footer {
@@ -259,7 +299,7 @@
 
   <!-- TABLAS -->
   <main>
-    <section class="tabla-seccion"><div class="seccion-header"><h2>STFIJO · SGI · GIOR</h2><span class="mo-badge" style="background:#2E7D32;color:#fff">89 INCUMPLE</span><span class="mo-badge mo-badge-gray">985 total · SLA 24-48h</span></div><div class="tabla-wrap"><table class="mo-table"><thead><tr><th>Ticket</th><th>Subcategoría</th><th>Horas sin gestión</th><th>Última gestión</th><th>Estado</th></tr></thead><tbody>
+    <section class="tabla-seccion" id="sec-fijo"><div class="seccion-header"><h2>STFIJO · SGI · GIOR</h2><span class="mo-badge" style="background:#2E7D32;color:#fff">89 INCUMPLE</span><span class="mo-badge mo-badge-gray">985 total · SLA 24-48h</span></div><div class="tabla-toolbar"><input type="text" placeholder="Filtrar subcategoría…" class="tabla-filter-input" data-sec="fijo" /><button class="tabla-filter-btn active" data-sec="fijo" data-filter="all">Todos</button><button class="tabla-filter-btn" data-sec="fijo" data-filter="critico">Solo &gt;96h</button><span class="tabla-count" id="count-fijo">89 INCUMPLE visibles</span><button class="btn-export-csv" data-sec="fijo">&#8615; CSV</button></div><div class="tabla-wrap"><table class="mo-table" id="tabla-fijo"><thead><tr><th>Ticket</th><th>Subcategoría</th><th>Horas sin gestión</th><th>Última gestión</th><th>Estado</th></tr></thead><tbody>
 <tr><td><a href="https://tgjira.masmovil.com/browse/ATC-8365058" target="_blank">ATC-8365058</a></td><td>NO EMITE / NO RECIBE</td><td style="font-weight:700;color:#C62828">147.2h</td><td>2026-06-06</td><td>⛔ 147.2h lab. sin gestión</td></tr>
 <tr><td><a href="https://tgjira.masmovil.com/browse/ATC-8213670" target="_blank">ATC-8213670</a></td><td>NO EMITE / NO RECIBE</td><td style="font-weight:700;color:#C62828">140.6h</td><td>2026-06-07</td><td>⛔ 140.6h lab. sin gestión</td></tr>
 <tr><td><a href="https://tgjira.masmovil.com/browse/ATC-8430968" target="_blank">ATC-8430968</a></td><td>CAMBIO DE EQUIPO</td><td style="font-weight:700;color:#C62828">130.2h</td><td>2026-06-08</td><td>⛔ 130.2h lab. sin gestión</td></tr>
@@ -1247,7 +1287,7 @@
 <tr class="otros-row-fijo" style="display:none"><td><a href="https://tgjira.masmovil.com/browse/ATC-8567756" target="_blank">ATC-8567756</a></td><td>INCOMUNICADO</td><td>3.2h</td><td>2026-06-15</td><td>✅ Dentro de SLA</td></tr>
 <tr class="otros-row-fijo" style="display:none"><td><a href="https://tgjira.masmovil.com/browse/ATC-8567758" target="_blank">ATC-8567758</a></td><td>INCOMUNICADO</td><td>3.2h</td><td>2026-06-15</td><td>✅ Dentro de SLA</td></tr>
 </tbody></table></div></section>
-<section class="tabla-seccion"><div class="seccion-header"><h2>Logística</h2><span class="mo-badge" style="background:#C62828;color:#fff">228 INCUMPLE</span><span class="mo-badge mo-badge-gray">403 (258 comput.) total · SLA 24h</span></div><div class="tabla-wrap"><table class="mo-table"><thead><tr><th>Ticket</th><th>Subcategoría</th><th>Horas sin gestión</th><th>Última gestión</th><th>Estado</th></tr></thead><tbody>
+<section class="tabla-seccion" id="sec-logistica"><div class="seccion-header"><h2>Logística</h2><span class="mo-badge" style="background:#C62828;color:#fff">228 INCUMPLE</span><span class="mo-badge mo-badge-gray">403 (258 comput.) total · SLA 24h</span></div><div class="tabla-toolbar"><input type="text" placeholder="Filtrar subcategoría…" class="tabla-filter-input" data-sec="logistica" /><button class="tabla-filter-btn active" data-sec="logistica" data-filter="all">Todos</button><button class="tabla-filter-btn" data-sec="logistica" data-filter="critico">Solo &gt;96h</button><span class="tabla-count" id="count-logistica">228 INCUMPLE visibles</span><button class="btn-export-csv" data-sec="logistica">&#8615; CSV</button></div><div class="tabla-wrap"><table class="mo-table" id="tabla-logistica"><thead><tr><th>Ticket</th><th>Subcategoría</th><th>Horas sin gestión</th><th>Última gestión</th><th>Estado</th></tr></thead><tbody>
 <tr><td><a href="https://tgjira.masmovil.com/browse/ATC-8352679" target="_blank">ATC-8352679</a></td><td>CORTES DE SERVICIO</td><td style="font-weight:700;color:#C62828">216.0h</td><td>2026-06-02</td><td>⛔ 216h lab. sin gestión (SLA 24h)</td></tr>
 <tr><td><a href="https://tgjira.masmovil.com/browse/ATC-8432158" target="_blank">ATC-8432158</a></td><td>CORTES DE SERVICIO</td><td style="font-weight:700;color:#C62828">213.8h</td><td>2026-06-02</td><td>⛔ 213.8h lab. sin gestión (SLA 24h)</td></tr>
 <tr><td><a href="https://tgjira.masmovil.com/browse/ATC-8471503" target="_blank">ATC-8471503</a></td><td>CAMBIO DE EQUIPO</td><td style="font-weight:700;color:#C62828">202.0h</td><td>2026-06-03</td><td>⛔ 202h lab. sin gestión (SLA 24h)</td></tr>
@@ -1671,7 +1711,18 @@
     <p>Generado autom&aacute;ticamente &middot; BOST MasOrange &middot; 16/06/2026 a las 11:14h</p>
   </footer>
 
+  <div id="refresh-badge" title="Refresco automático cada 5 min. Haz clic para refrescar ahora.">&#8635; auto</div>
+
   <script>
+    /* ── Marcar filas críticas >96h ──────────────────────────────── */
+    document.querySelectorAll('.mo-table tbody tr').forEach(function(row) {
+      var cells = row.querySelectorAll('td');
+      if (cells.length < 3) return;
+      var hText = cells[2].textContent.trim().replace('h','');
+      var h = parseFloat(hText);
+      if (!isNaN(h) && h > 96) row.classList.add('row-critico');
+    });
+
     /* ── Toggle de filas CUMPLE ─────────────────────────────────── */
     document.querySelectorAll('.toggle-row').forEach(function(row) {
       row.addEventListener('click', function() {
@@ -1690,31 +1741,103 @@
       });
     });
 
+    /* ── Filtros de tabla ───────────────────────────────────────── */
+    function applyFilters(sec) {
+      var input = document.querySelector('.tabla-filter-input[data-sec="' + sec + '"]');
+      var activeBtn = document.querySelector('.tabla-filter-btn.active[data-sec="' + sec + '"]');
+      var text = input ? input.value.toLowerCase() : '';
+      var mode = activeBtn ? activeBtn.dataset.filter : 'all';
+      var tabla = document.getElementById('tabla-' + sec);
+      if (!tabla) return;
+      var visible = 0;
+      tabla.querySelectorAll('tbody tr').forEach(function(row) {
+        if (row.classList.contains('toggle-row')) return;
+        var cells = row.querySelectorAll('td');
+        if (cells.length < 3) return;
+        var categ = cells[1].textContent.toLowerCase();
+        var horas = parseFloat(cells[2].textContent.replace('h','')) || 0;
+        var matchText = !text || categ.indexOf(text) !== -1;
+        var matchMode = mode === 'all' || (mode === 'critico' && horas > 96);
+        var show = matchText && matchMode;
+        row.style.display = show ? '' : 'none';
+        if (show && !row.classList.contains('toggle-row')) visible++;
+      });
+      var badge = document.getElementById('count-' + sec);
+      if (badge) badge.textContent = visible + ' visibles';
+    }
+
+    document.querySelectorAll('.tabla-filter-input').forEach(function(input) {
+      input.addEventListener('input', function() { applyFilters(this.dataset.sec); });
+    });
+
+    document.querySelectorAll('.tabla-filter-btn').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var sec = this.dataset.sec;
+        document.querySelectorAll('.tabla-filter-btn[data-sec="' + sec + '"]').forEach(function(b) { b.classList.remove('active'); });
+        this.classList.add('active');
+        applyFilters(sec);
+      });
+    });
+
+    /* ── Exportar CSV ───────────────────────────────────────────── */
+    document.querySelectorAll('.btn-export-csv').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var sec = this.dataset.sec;
+        var tabla = document.getElementById('tabla-' + sec);
+        if (!tabla) return;
+        var rows = [['Ticket','Subcategoría','Horas sin gestión','Última gestión','Estado']];
+        tabla.querySelectorAll('tbody tr').forEach(function(row) {
+          if (row.classList.contains('toggle-row')) return;
+          if (row.style.display === 'none') return;
+          var cells = row.querySelectorAll('td');
+          if (cells.length < 5) return;
+          rows.push([
+            cells[0].textContent.trim(),
+            cells[1].textContent.trim(),
+            cells[2].textContent.trim(),
+            cells[3].textContent.trim(),
+            cells[4].textContent.trim()
+          ]);
+        });
+        var csv = rows.map(function(r) {
+          return r.map(function(c) { return '"' + c.replace(/"/g, '""') + '"'; }).join(',');
+        }).join('\n');
+        var blob = new Blob(['﻿' + csv], {type: 'text/csv;charset=utf-8;'});
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'sla_' + sec + '_16-06-2026.csv';
+        a.click();
+      });
+    });
+
+    /* ── Auto-refresco ──────────────────────────────────────────── */
+    var refreshSeconds = 300;
+    var countdown = refreshSeconds;
+    var badge = document.getElementById('refresh-badge');
+    setInterval(function() {
+      countdown--;
+      if (badge) badge.textContent = '↻ ' + countdown + 's';
+      if (countdown <= 0) { location.reload(); }
+    }, 1000);
+    if (badge) badge.addEventListener('click', function() { location.reload(); });
+
     /* ── Dark / Light mode toggle ───────────────────────────────── */
     (function() {
       var btn   = document.getElementById('themeToggle');
       var icon  = document.getElementById('themeIcon');
       var label = document.getElementById('themeLabel');
       var html  = document.documentElement;
-
-      // Detectar preferencia del sistema
       var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       var stored = localStorage.getItem('mo-theme');
       var isDark = stored ? stored === 'dark' : prefersDark;
-
       function applyTheme(dark) {
         html.setAttribute('data-theme', dark ? 'dark' : 'light');
-        icon.textContent  = dark ? '☀' : '☽';   // sol / luna
+        icon.textContent  = dark ? '☀' : '☽';
         label.textContent = dark ? 'Modo claro' : 'Modo oscuro';
         localStorage.setItem('mo-theme', dark ? 'dark' : 'light');
       }
-
       applyTheme(isDark);
-
-      btn.addEventListener('click', function() {
-        isDark = !isDark;
-        applyTheme(isDark);
-      });
+      btn.addEventListener('click', function() { isDark = !isDark; applyTheme(isDark); });
     })();
   </script>
 
