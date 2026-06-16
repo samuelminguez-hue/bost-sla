@@ -133,6 +133,15 @@
       font-family:Arial,Helvetica,sans-serif; transition:opacity .15s;
     }
     .cola-toggle-btn.off { border-color:#ccc !important; color:#ccc !important; }
+    /* CHART MODE */
+    .chart-mode-btn {
+      background:var(--mo-white); border:1.5px solid var(--mo-border);
+      color:var(--mo-muted); font-size:0.72rem; font-weight:700;
+      padding:3px 10px; border-radius:4px; cursor:pointer;
+      font-family:Arial,Helvetica,sans-serif; transition:all .15s;
+    }
+    .chart-mode-btn.active { background:var(--mo-black); border-color:var(--mo-black); color:#fff; }
+    .chart-mode-btn:hover:not(.active) { border-color:var(--mo-orange); color:var(--mo-orange); }
     /* PRODUCT TABS */
     .product-tab {
       font-size:0.78rem; font-weight:700; padding:4px 14px; border-radius:4px;
@@ -175,7 +184,7 @@
 <section class="hero">
   <div>
     <div class="hero-title">SLA Global</div>
-    <div class="hero-sub">Lunes, 15/06/2026 &middot; Datos a las 08:30h &middot; Generado 12:54h</div>
+    <div class="hero-sub">Martes, 16/06/2026 &middot; Datos a las 08:30h &middot; Generado 07:52h</div>
   </div>
   <div class="hero-pill">✅ CORRECTO</div>
 </section>
@@ -258,14 +267,20 @@
     </div>
   </div>
   <!-- Cola toggles -->
-  <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:10px">
-    <span style="font-size:0.7rem;color:var(--mo-muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em">Colas:</span>
-    <button class="cola-toggle-btn" data-cola="stfijo" style="border-color:#FF5900;color:#FF5900">STFIJO-ZL</button>
-    <button class="cola-toggle-btn" data-cola="sgi"    style="border-color:#1a73e8;color:#1a73e8">SGI</button>
-    <button class="cola-toggle-btn" data-cola="gior"   style="border-color:#0b8043;color:#0b8043">GIOR</button>
-    <button class="cola-toggle-btn" data-cola="logistica" style="border-color:#9c27b0;color:#9c27b0">Log&iacute;stica</button>
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+    <span style="font-size:0.7rem;color:var(--mo-muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em">Vista:</span>
+    <button class="chart-mode-btn active" data-mode="colas">Por colas</button>
+    <button class="chart-mode-btn" data-mode="total">Total</button>
+    <div style="width:1px;height:18px;background:var(--mo-border);margin:0 2px"></div>
+    <div id="cola-controls" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+      <span style="font-size:0.7rem;color:var(--mo-muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em">Colas:</span>
+      <button class="cola-toggle-btn" data-cola="stfijo" style="border-color:#FF5900;color:#FF5900">STFIJO-ZL</button>
+      <button class="cola-toggle-btn" data-cola="sgi"    style="border-color:#1a73e8;color:#1a73e8">SGI</button>
+      <button class="cola-toggle-btn" data-cola="gior"   style="border-color:#0b8043;color:#0b8043">GIOR</button>
+      <button class="cola-toggle-btn" data-cola="logistica" style="border-color:#9c27b0;color:#9c27b0">Log&iacute;stica</button>
+    </div>
   </div>
-  <div class="section-subtitle">% cumplimiento diario · Objetivo: 80% (l&iacute;nea amarilla)</div>
+  <div class="section-subtitle">% cumplimiento diario &middot; Objetivo: 80% (l&iacute;nea amarilla)</div>
   <svg id="sla-chart-svg" xmlns="http://www.w3.org/2000/svg" style="width:100%;font-family:Arial,Helvetica,sans-serif" viewBox="0 0 560 220"></svg>
   <div class="chart-source">Datos reales de los últimos 4 días (puente HTML · <a href="https://jiranext.masorange.es/browse/BST-13142" style="color:#FF5900">BST-13142</a> para histórico oficial en BQ).</div>
 </div>
@@ -289,7 +304,7 @@
       <rect x="36" y="24" width="16" height="16" fill="currentColor"/>
       <circle cx="104" cy="34" r="28" fill="none" stroke="currentColor" stroke-width="10"/>
     </svg>
-    <span style="margin-left:10px">Generado automáticamente · BOST MasOrange · 15/06/2026 12:54h</span>
+    <span style="margin-left:10px">Generado automáticamente · BOST MasOrange · 16/06/2026 07:52h</span>
   </div>
   <div class="mo-footer-links">
     <a href="fijo.html">Informe Fijo</a>
@@ -321,6 +336,11 @@ const COLA_LABELS = {stfijo:'STFIJO-ZL',sgi:'SGI',gior:'GIOR',logistica:'Log\u00
 const COLA_KEYS   = ['stfijo','sgi','gior','logistica'];
 var activeDays = 7;
 var visibleColas = {stfijo:true,sgi:true,gior:true,logistica:true};
+var chartMode = 'colas';
+
+function cssVar(name){
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
 
 function drawChart(){
   var data=activeDays>0?CHART_DATA.slice(-activeDays):CHART_DATA;
@@ -330,43 +350,78 @@ function drawChart(){
     svg.innerHTML="<text x='50%' y='50%' text-anchor='middle' font-size='13' fill='#aaa'>Sin datos hist\u00f3ricos disponibles a\u00fan.</text>";
     svg.setAttribute('viewBox','0 0 560 220');return;
   }
-  var W=560,H=220,PL=38,PR=85,PT=14,PB=32;
+  var W=560,H=220,PL=38,PR=90,PT=14,PB=32;
   var cW=W-PL-PR,cH=H-PT-PB,n=data.length;
   function xFor(i){return PL+(n===1?cW/2:i/(n-1)*cW);}
   function yFor(p){return PT+cH-(p/100)*cH;}
+  var gridC=cssVar('--mo-border')||'#e0e0e0';
+  var mutedC=cssVar('--mo-muted')||'#666';
+  var textC=cssVar('--mo-text')||'#111';
   var html='';
   [0,20,40,60,80,100].forEach(function(pct){
     var y=yFor(pct).toFixed(1);
-    html+="<line x1='"+PL+"' y1='"+y+"' x2='"+(PL+cW)+"' y2='"+y+"' stroke='#e8e8e8' stroke-width='1'/>";
-    html+="<text x='"+(PL-4)+"' y='"+(parseFloat(y)+3.5).toFixed(1)+"' font-size='9' fill='#aaa' text-anchor='end'>"+pct+"%</text>";
+    html+="<line x1='"+PL+"' y1='"+y+"' x2='"+(PL+cW)+"' y2='"+y+"' stroke='"+gridC+"' stroke-width='1'/>";
+    html+="<text x='"+(PL-4)+"' y='"+(parseFloat(y)+3.5).toFixed(1)+"' font-size='9' fill='"+mutedC+"' text-anchor='end'>"+pct+"%</text>";
   });
   var y80=yFor(80).toFixed(1);
   html+="<line x1='"+PL+"' y1='"+y80+"' x2='"+(PL+cW)+"' y2='"+y80+"' stroke='#FFD600' stroke-width='1.5' stroke-dasharray='5,4' opacity='0.9'/>";
-  html+="<text x='"+(PL+cW+2)+"' y='"+(parseFloat(y80)+4).toFixed(1)+"' font-size='9' fill='#888'>80%</text>";
+  html+="<text x='"+(PL+cW+2)+"' y='"+(parseFloat(y80)+4).toFixed(1)+"' font-size='9' fill='#FFD600'>80%</text>";
   var step=Math.max(1,Math.floor(n/7));
   for(var i=0;i<n;i+=step){
     var d=data[i].fecha.slice(5).replace('-','/');
-    html+="<text x='"+xFor(i).toFixed(1)+"' y='"+(PT+cH+18).toFixed(1)+"' font-size='9' fill='#888' text-anchor='middle'>"+d+"</text>";
+    html+="<text x='"+xFor(i).toFixed(1)+"' y='"+(PT+cH+18).toFixed(1)+"' font-size='9' fill='"+mutedC+"' text-anchor='middle'>"+d+"</text>";
   }
   if(n>1){
     var ld=data[n-1].fecha.slice(5).replace('-','/');
-    html+="<text x='"+xFor(n-1).toFixed(1)+"' y='"+(PT+cH+18).toFixed(1)+"' font-size='9' fill='#333' text-anchor='middle' font-weight='bold'>"+ld+"</text>";
+    html+="<text x='"+xFor(n-1).toFixed(1)+"' y='"+(PT+cH+18).toFixed(1)+"' font-size='9' fill='"+textC+"' text-anchor='middle' font-weight='bold'>"+ld+"</text>";
   }
-  COLA_KEYS.forEach(function(key){
-    if(!visibleColas[key])return;
-    var color=COLA_COLORS[key],label=COLA_LABELS[key];
+  var series=[];
+  if(chartMode==='total'){
     var pts=[];
-    data.forEach(function(d,i){if(d[key]){pts.push([xFor(i),yFor(d[key].pct)]);}});
-    if(pts.length<1)return;
-    var dPath=pts.map(function(p,j){return(j===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1);}).join(' ');
-    html+="<path d='"+dPath+"' fill='none' stroke='"+color+"' stroke-width='2' stroke-linejoin='round' stroke-linecap='round'/>";
-    pts.forEach(function(p){html+="<circle cx='"+p[0].toFixed(1)+"' cy='"+p[1].toFixed(1)+"' r='3' fill='"+color+"' stroke='#fff' stroke-width='1.2'/>";});
-    var lp=pts[pts.length-1];
-    html+="<text x='"+(lp[0]+5).toFixed(1)+"' y='"+(lp[1]+4).toFixed(1)+"' font-size='8.5' fill='"+color+"' font-weight='bold'>"+label+"</text>";
+    data.forEach(function(d,i){
+      var sum=0,cnt=0;
+      COLA_KEYS.forEach(function(k){if(d[k]){sum+=d[k].pct;cnt++;}});
+      if(cnt>0)pts.push([xFor(i),yFor(sum/cnt)]);
+    });
+    if(pts.length>0)series.push({pts:pts,color:'#ffffff',label:'Total',sw:2.5});
+  } else {
+    COLA_KEYS.forEach(function(key){
+      if(!visibleColas[key])return;
+      var pts=[];
+      data.forEach(function(d,i){if(d[key])pts.push([xFor(i),yFor(d[key].pct)]);});
+      if(pts.length>0)series.push({pts:pts,color:COLA_COLORS[key],label:COLA_LABELS[key],sw:2});
+    });
+  }
+  series.forEach(function(s){
+    var dPath=s.pts.map(function(p,j){return(j===0?'M':'L')+p[0].toFixed(1)+','+p[1].toFixed(1);}).join(' ');
+    html+="<path d='"+dPath+"' fill='none' stroke='"+s.color+"' stroke-width='"+s.sw+"' stroke-linejoin='round' stroke-linecap='round'/>";
+    s.pts.forEach(function(p){html+="<circle cx='"+p[0].toFixed(1)+"' cy='"+p[1].toFixed(1)+"' r='3' fill='"+s.color+"' stroke='#fff' stroke-width='1.2'/>";});
+  });
+  var labels=series.map(function(s){
+    var lp=s.pts[s.pts.length-1];
+    return {x:lp[0],y:lp[1],color:s.color,label:s.label};
+  });
+  labels.sort(function(a,b){return a.y-b.y;});
+  for(var i=1;i<labels.length;i++){
+    if(labels[i].y<labels[i-1].y+13)labels[i].y=labels[i-1].y+13;
+  }
+  labels.forEach(function(item){
+    html+="<text x='"+(item.x+5).toFixed(1)+"' y='"+(item.y+4).toFixed(1)+"' font-size='8.5' fill='"+item.color+"' font-weight='bold'>"+item.label+"</text>";
   });
   svg.setAttribute('viewBox','0 0 '+W+' '+H);
   svg.innerHTML=html;
 }
+
+document.querySelectorAll('.chart-mode-btn').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    document.querySelectorAll('.chart-mode-btn').forEach(function(b){b.classList.remove('active');});
+    this.classList.add('active');
+    chartMode=this.dataset.mode;
+    var cc=document.getElementById('cola-controls');
+    if(cc)cc.style.display=chartMode==='colas'?'flex':'none';
+    drawChart();
+  });
+});
 
 document.querySelectorAll('.chart-filter-btn').forEach(function(btn){
   btn.addEventListener('click',function(){
