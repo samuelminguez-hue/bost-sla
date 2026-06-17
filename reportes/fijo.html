@@ -1818,7 +1818,10 @@
       if (!tabla) return;
       tabla.querySelectorAll('tbody tr').forEach(function(row) {
         if (row.classList.contains('toggle-row')) return;
-        if (row.className.indexOf('otros-row') !== -1) return;
+        if (row.className.indexOf('otros-row') !== -1) {
+          if (mode === 'critico') row.style.display = 'none';
+          return;
+        }
         var categ = (row.dataset.categ || '').toLowerCase();
         var horas = parseFloat(row.dataset.horas) || 0;
         var matchText = !text || categ.indexOf(text) !== -1;
@@ -1869,7 +1872,10 @@
         var a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = 'sla_' + sec + '_2026-06-17.csv';
+        document.body.appendChild(a);
         a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
       });
     });
 
