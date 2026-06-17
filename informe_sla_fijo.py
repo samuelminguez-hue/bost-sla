@@ -2040,7 +2040,7 @@ def bq_datos_listos(client, tz):
         return False
 
 
-def esperar_datos_bq(client, tz, hora_limite=10, minutos_limite=30, intervalo_min=30):
+def esperar_datos_bq(client, tz, hora_limite=10, minutos_limite=30, intervalo_min=15):
     """
     Espera hasta que BQ tenga los datos del día anterior o se alcance la hora límite.
     Reintenta cada `intervalo_min` minutos.
