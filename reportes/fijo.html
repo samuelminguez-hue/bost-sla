@@ -1866,8 +1866,7 @@
         });
         var csv = rows.map(function(r) {
           return r.map(function(c) { return '"' + c.replace(/"/g, '""') + '"'; }).join(',');
-        }).join('
-');
+        }).join('\n');
         var blob = new Blob(['﻿' + csv], {type: 'text/csv;charset=utf-8;'});
         var a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
