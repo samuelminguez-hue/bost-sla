@@ -2,14 +2,16 @@
 # ejecutar_informe.ps1
 # Wrapper para Task Scheduler — Informe SLA Fijo (BST-13120)
 # Se ejecuta diariamente a las 09:00h (L-D)
+# Rutas derivadas de $PSScriptRoot para evitar problemas de
+# codificacion con caracteres especiales (Jose Ramon).
 # ============================================================
 
 $python   = "C:\Users\samuel.minguez\AppData\Local\Programs\Python\Python312\python.exe"
-$script   = "C:\Users\samuel.minguez\OneDrive - MASORANGE\Archivos de José Ramón Vigil Blanco - Proyectos\BOST_AVERIAS_IA\INFORME_SLA_FIJO\informe_sla_fijo.py"
-$log      = "C:\Users\samuel.minguez\OneDrive - MASORANGE\Archivos de José Ramón Vigil Blanco - Proyectos\BOST_AVERIAS_IA\INFORME_SLA_FIJO\reportes\informe_sla.log"
-$workdir  = "C:\Users\samuel.minguez\OneDrive - MASORANGE\Archivos de José Ramón Vigil Blanco - Proyectos\BOST_AVERIAS_IA\INFORME_SLA_FIJO"
+$script   = "$PSScriptRoot\informe_sla_fijo.py"
+$log      = "$PSScriptRoot\reportes\informe_sla.log"
+$workdir  = $PSScriptRoot
 $git      = "C:\Users\samuel.minguez\AppData\Local\Programs\Git\mingw64\bin\git.exe"
-$reportes = "$workdir\reportes"
+$reportes = "$PSScriptRoot\reportes"
 
 function Log($msg) { Add-Content -Path $log -Value $msg }
 
@@ -18,7 +20,7 @@ $sep = "=" * 60
 $ts  = Get-Date -Format "yyyy-MM-dd HH:mm:ss"
 Log ""; Log $sep; Log "Ejecucion: $ts"; Log $sep
 
-# ── 1. Generar informe (Python) ───────────────────────────────
+# -- 1. Generar informe (Python) -------------------------------------------
 Set-Location $workdir
 $output = & $python $script 2>&1
 $exitPy = $LASTEXITCODE
@@ -26,18 +28,18 @@ $output | ForEach-Object { Log $_ }
 Log "Codigo salida Python: $exitPy"
 
 if ($exitPy -ne 0) {
-    Log "ERROR: Python falló. Abortando git push."
+    Log "ERROR: Python fallo. Abortando git push."
     exit $exitPy
 }
 
-# Comprobar si fue un SKIP (ya generado hoy) — no hay nada nuevo que subir
+# Comprobar si fue un SKIP (ya generado hoy) -- no hay nada nuevo que subir
 $outputStr = $output -join " "
 if ($outputStr -match "\[SKIP\]") {
     Log "Informe ya generado hoy (SKIP). No se hace push."
     exit 0
 }
 
-# ── 2. Git push a GitHub Pages ────────────────────────────────
+# -- 2. Git push a GitHub Pages --------------------------------------------
 Set-Location $reportes
 $fecha = Get-Date -Format "yyyy-MM-dd HH:mm"
 

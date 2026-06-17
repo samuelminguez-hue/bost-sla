@@ -2020,21 +2020,19 @@ def generar_global_html(results, now, historico):
 
 def bq_datos_listos(client, tz):
     """
-    Verifica que BQ tiene datos del día anterior (FECHA_CARGA = ayer).
+    Verifica que BQ tiene datos de hoy (FECHA_CARGA = CURRENT_DATE()).
+    La ETL carga los datos con FECHA_CARGA = fecha de carga (hoy), no fecha de datos.
     Devuelve True si están listos, False si aún no han cargado.
     """
-    import time
-    ayer = (datetime.now(tz=tz).date() - __import__('datetime').timedelta(days=1)).isoformat()
-    sql = f"""
-        SELECT MAX(FECHA_CARGA) AS ultima_carga
+    sql = """
+        SELECT COUNT(*) AS total
         FROM `mm-operaciones-bigquery.datastudio.ZZ_averias`
-        WHERE FECHA_CARGA >= '{ayer}'
+        WHERE FECHA_CARGA = CURRENT_DATE()
         LIMIT 1
     """
     try:
         rows = list(client.query(sql).result())
-        ultima = rows[0].ultima_carga if rows else None
-        return str(ultima) == ayer
+        return rows[0].total > 0
     except Exception as e:
         print(f"[BQ] Error verificando carga: {e}")
         return False
