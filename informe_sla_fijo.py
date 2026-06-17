@@ -165,6 +165,7 @@ def build_rows_html(rows, col_gestion, sec_key):
 # ─────────────────────────────────────────────────────────────────
 def generate_html(results, now):
     fecha_str = now.strftime("%d/%m/%Y")
+    fecha_iso = now.strftime("%Y-%m-%d")
     hora_str  = now.strftime("%H:%M")
 
     # KPI cards
@@ -277,6 +278,7 @@ def generate_html(results, now):
 
     return HTML_TEMPLATE.format(
         fecha_informe=fecha_str,
+        fecha_iso=fecha_iso,
         hora_generacion=hora_str,
         kpi_global=kpi_global_html,
         kpi_cards=kpi_html,
@@ -647,6 +649,7 @@ HTML_TEMPLATE = """\
       if (!tabla) return;
       tabla.querySelectorAll('tbody tr').forEach(function(row) {{
         if (row.classList.contains('toggle-row')) return;
+        if (row.className.indexOf('otros-row') !== -1) return;
         var categ = (row.dataset.categ || '').toLowerCase();
         var horas = parseFloat(row.dataset.horas) || 0;
         var matchText = !text || categ.indexOf(text) !== -1;
@@ -695,7 +698,7 @@ HTML_TEMPLATE = """\
         var blob = new Blob(['﻿' + csv], {{type: 'text/csv;charset=utf-8;'}});
         var a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
-        a.download = 'sla_' + sec + '_{fecha_informe}.csv';
+        a.download = 'sla_' + sec + '_{fecha_iso}.csv';
         a.click();
       }});
     }});
@@ -1049,12 +1052,12 @@ def build_email_prediccion(rows_riesgo, now):
       <div style="font-size:0.78rem;color:#999;margin-top:4px">{fecha_str} · {hora_str}h · Datos BQ a las 00:00h</div>
     </div>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 68" width="72" style="color:#FF5900;flex-shrink:0">
-      <rect x="4"  y="24" width="16" height="16" fill="currentColor"/>
-      <rect x="20" y="8"  width="16" height="16" fill="currentColor"/>
-      <rect x="20" y="24" width="16" height="16" fill="currentColor"/>
-      <rect x="20" y="40" width="16" height="16" fill="currentColor"/>
-      <rect x="36" y="24" width="16" height="16" fill="currentColor"/>
-      <circle cx="104" cy="34" r="28" fill="none" stroke="currentColor" stroke-width="10"/>
+      <rect x="4"  y="24" width="16" height="16" fill="#FF5900"/>
+      <rect x="20" y="8"  width="16" height="16" fill="#FF5900"/>
+      <rect x="20" y="24" width="16" height="16" fill="#FF5900"/>
+      <rect x="20" y="40" width="16" height="16" fill="#FF5900"/>
+      <rect x="36" y="24" width="16" height="16" fill="#FF5900"/>
+      <circle cx="104" cy="34" r="28" fill="none" stroke="#fff" stroke-width="10"/>
     </svg>
   </div>
 
@@ -1905,12 +1908,12 @@ def generar_global_html(results, now, historico):
       <span id="mo-theme-label">Modo oscuro</span>
     </button>
     <svg class="mo-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 68" role="img" aria-label="MasOrange">
-      <rect x="4"  y="24" width="16" height="16" fill="currentColor"/>
-      <rect x="20" y="8"  width="16" height="16" fill="currentColor"/>
-      <rect x="20" y="24" width="16" height="16" fill="currentColor"/>
-      <rect x="20" y="40" width="16" height="16" fill="currentColor"/>
-      <rect x="36" y="24" width="16" height="16" fill="currentColor"/>
-      <circle cx="104" cy="34" r="28" fill="none" stroke="currentColor" stroke-width="10"/>
+      <rect x="4"  y="24" width="16" height="16" fill="#FF5900"/>
+      <rect x="20" y="8"  width="16" height="16" fill="#FF5900"/>
+      <rect x="20" y="24" width="16" height="16" fill="#FF5900"/>
+      <rect x="20" y="40" width="16" height="16" fill="#FF5900"/>
+      <rect x="36" y="24" width="16" height="16" fill="#FF5900"/>
+      <circle cx="104" cy="34" r="28" fill="none" stroke="#fff" stroke-width="10"/>
     </svg>
   </div>
 </nav>
@@ -1988,12 +1991,12 @@ def generar_global_html(results, now, historico):
 <footer class="mo-footer">
   <div>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 68" width="48" style="color:#fff;vertical-align:middle" aria-label="MasOrange">
-      <rect x="4"  y="24" width="16" height="16" fill="currentColor"/>
-      <rect x="20" y="8"  width="16" height="16" fill="currentColor"/>
-      <rect x="20" y="24" width="16" height="16" fill="currentColor"/>
-      <rect x="20" y="40" width="16" height="16" fill="currentColor"/>
-      <rect x="36" y="24" width="16" height="16" fill="currentColor"/>
-      <circle cx="104" cy="34" r="28" fill="none" stroke="currentColor" stroke-width="10"/>
+      <rect x="4"  y="24" width="16" height="16" fill="#FF5900"/>
+      <rect x="20" y="8"  width="16" height="16" fill="#FF5900"/>
+      <rect x="20" y="24" width="16" height="16" fill="#FF5900"/>
+      <rect x="20" y="40" width="16" height="16" fill="#FF5900"/>
+      <rect x="36" y="24" width="16" height="16" fill="#FF5900"/>
+      <circle cx="104" cy="34" r="28" fill="none" stroke="#fff" stroke-width="10"/>
     </svg>
     <span style="margin-left:10px">Generado automáticamente · BOST MasOrange · {fecha_str} {hora_str}h</span>
   </div>
