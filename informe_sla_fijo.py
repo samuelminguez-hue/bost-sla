@@ -969,6 +969,19 @@ def build_email_body(results, now):
     {evolucion_html}
   </div>
 
+  <!-- BOTÓN DASHBOARD COMPARTIDO -->
+  <div style="padding:16px 28px 20px;background:#fff;text-align:center;border-top:1px solid #f0f0f0">
+    <a href="https://samuelminguez-hue.github.io/bost-sla/"
+       style="display:inline-block;background:#FF5900;color:#fff;font-family:Arial,Helvetica,sans-serif;
+              font-size:0.875rem;font-weight:700;padding:11px 28px;border-radius:3px;
+              text-decoration:none;letter-spacing:.03em">
+      Ver dashboard completo
+    </a>
+    <div style="margin-top:8px;font-size:0.72rem;color:#999">
+      Acceso directo al informe interactivo con filtros, histórico y exportación CSV
+    </div>
+  </div>
+
   <!-- PIE -->
   <div style="background:#000;padding:12px 28px;font-size:0.72rem;color:#888;display:table;width:100%;box-sizing:border-box">
     <span style="display:table-cell;vertical-align:middle">Informe completo adjunto &middot; BOST MasOrange</span>
