@@ -185,17 +185,17 @@
 <section class="hero">
   <div>
     <div class="hero-title">SLA Global</div>
-    <div class="hero-sub">Martes, 16/06/2026 &middot; Datos a las 08:30h &middot; Generado 11:14h</div>
+    <div class="hero-sub">Miércoles, 17/06/2026 &middot; Datos a las 08:30h &middot; Generado 10:08h</div>
   </div>
   <div class="hero-pill">⚠️ ATENCIÓN</div>
 </section>
 
 <!-- KPI GLOBAL -->
 <div class="kpi-global-block">
-  <div class="kpi-global-number">74.5%</div>
+  <div class="kpi-global-number">73.5%</div>
   <div>
     <div class="kpi-global-label">Cumplimiento global SLA</div>
-    <div class="kpi-global-detail">926 cumplen · <strong style="color:#FF5900">317 incumplen</strong> · 1243 total computables</div>
+    <div class="kpi-global-detail">983 cumplen · <strong style="color:#FF5900">354 incumplen</strong> · 1337 total computables</div>
   </div>
 </div>
 
@@ -204,25 +204,25 @@
 
         <div class="kpi-card">
           <div class="kpi-card-header">
-            <span class="kpi-card-label">STFIJO · SGI · GIOR</span>
+            <span class="kpi-card-label">STFIJO</span>
             <span class="kpi-card-sla">SLA 24-48h</span>
           </div>
-          <div class="kpi-card-pct" style="color:#2E7D32">91.0%</div>
+          <div class="kpi-card-pct" style="color:#2E7D32">82.5%</div>
           <div class="kpi-bar-bg">
-            <div class="kpi-bar-fill" style="background:#2E7D32;width:91.0%"></div>
+            <div class="kpi-bar-fill" style="background:#2E7D32;width:82.5%"></div>
           </div>
-          <div class="kpi-card-detail">89 incumplen · 985 computables</div>
+          <div class="kpi-card-detail">187 incumplen · 1070 computables</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-card-header">
             <span class="kpi-card-label">Logística</span>
             <span class="kpi-card-sla">SLA 24h</span>
           </div>
-          <div class="kpi-card-pct" style="color:#C62828">11.6%</div>
+          <div class="kpi-card-pct" style="color:#C62828">37.5%</div>
           <div class="kpi-bar-bg">
-            <div class="kpi-bar-fill" style="background:#C62828;width:11.6%"></div>
+            <div class="kpi-bar-fill" style="background:#C62828;width:37.5%"></div>
           </div>
-          <div class="kpi-card-detail">228 incumplen · 258 computables</div>
+          <div class="kpi-card-detail">167 incumplen · 267 computables</div>
         </div>
 </div>
 
@@ -261,14 +261,14 @@
   <div style="position:relative;height:240px">
     <canvas id="sla-chart"></canvas>
   </div>
-  <div class="chart-source">Datos reales de los últimos 5 días (puente HTML · <a href="https://jiranext.masorange.es/browse/BST-13142" style="color:#FF5900">BST-13142</a> para histórico oficial en BQ).</div>
+  <div class="chart-source">Datos reales de los últimos 6 días (puente HTML · <a href="https://jiranext.masorange.es/browse/BST-13142" style="color:#FF5900">BST-13142</a> para histórico oficial en BQ).</div>
 </div>
 
 <!-- ANÁLISIS -->
 <div class="section-block">
   <div class="section-title">Análisis del día</div>
   <ul class="analisis-list" style="margin-top:12px">
-    <li>La cola con mayor incumplimiento hoy es <strong>Logística</strong> (228 de 258 tickets, 11.6% cumplimiento).</li><li><strong>3 tickets en STFIJO-ZL superan las 96h sin gestión</strong>: <a href="https://tgjira.masmovil.com/browse/ATC-8365058" style="color:#FF5900;text-decoration:none">ATC-8365058</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8213670" style="color:#FF5900;text-decoration:none">ATC-8213670</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8430968" style="color:#FF5900;text-decoration:none">ATC-8430968</a>.</li><li>STFIJO · SGI · GIOR lidera con 91.0% de cumplimiento.</li>
+    <li>La cola con mayor incumplimiento hoy es <strong>Logística</strong> (167 de 267 tickets, 37.5% cumplimiento).</li><li><strong>1 tickets en STFIJO-ZL superan las 96h sin gestión</strong>: <a href="https://tgjira.masmovil.com/browse/ATC-8213670" style="color:#FF5900;text-decoration:none">ATC-8213670</a>.</li><li>STFIJO lidera con 82.5% de cumplimiento.</li>
   </ul>
 </div>
 
@@ -283,7 +283,7 @@
       <rect x="36" y="24" width="16" height="16" fill="currentColor"/>
       <circle cx="104" cy="34" r="28" fill="none" stroke="currentColor" stroke-width="10"/>
     </svg>
-    <span style="margin-left:10px">Generado automáticamente · BOST MasOrange · 16/06/2026 11:14h</span>
+    <span style="margin-left:10px">Generado automáticamente · BOST MasOrange · 17/06/2026 10:08h</span>
   </div>
   <div class="mo-footer-links">
     <a href="fijo.html">Informe Fijo</a>
@@ -309,9 +309,9 @@
     applyTheme(isDark);
     btn.addEventListener('click', function() { isDark = !isDark; applyTheme(isDark); });
   })();
-  const CHART_DATA = [{"fecha": "2026-06-10", "fijo": {"pct": 90.4, "incumple": 348}, "logistica": {"pct": 9.9, "incumple": 172}}, {"fecha": "2026-06-11", "fijo": {"pct": 88.8, "incumple": 413}, "logistica": {"pct": 9.0, "incumple": 182}}, {"fecha": "2026-06-12", "fijo": {"pct": 94.4, "incumple": 190}, "logistica": {"pct": 10.9, "incumple": 212}}, {"fecha": "2026-06-15", "fijo": {"pct": 91.0, "incumple": 235}, "logistica": {"pct": 0.8, "incumple": 240}}, {"fecha": "2026-06-16", "fijo": {"pct": 91.0, "incumple": 89}, "logistica": {"pct": 11.6, "incumple": 228}}];
+  const CHART_DATA = [{"fecha": "2026-06-10", "fijo": {"pct": 90.4, "incumple": 348}, "logistica": {"pct": 9.9, "incumple": 172}}, {"fecha": "2026-06-11", "fijo": {"pct": 88.8, "incumple": 413}, "logistica": {"pct": 9.0, "incumple": 182}}, {"fecha": "2026-06-12", "fijo": {"pct": 94.4, "incumple": 190}, "logistica": {"pct": 10.9, "incumple": 212}}, {"fecha": "2026-06-15", "fijo": {"pct": 91.0, "incumple": 235}, "logistica": {"pct": 0.8, "incumple": 240}}, {"fecha": "2026-06-16", "fijo": {"pct": 91.0, "incumple": 89}, "logistica": {"pct": 11.6, "incumple": 228}}, {"fecha": "2026-06-17", "fijo": {"pct": 82.5, "incumple": 187}, "logistica": {"pct": 37.5, "incumple": 167}}];
 const COLA_COLORS = {fijo:'#FF5900',logistica:'#9c27b0'};
-const COLA_LABELS = {fijo:'STFIJO\u00b7SGI\u00b7GIOR',logistica:'Log\u00edstica'};
+const COLA_LABELS = {fijo:'STFIJO·SGI·GIOR',logistica:'Logística'};
 const COLA_KEYS   = ['fijo','logistica'];
 var activeDays = 7;
 var visibleColas = {fijo:true,logistica:true};
@@ -329,6 +329,7 @@ function buildChartConfig(data){
   var labels = data.map(function(d){ return d.fecha.slice(5).replace('-','/'); });
   var datasets = [];
 
+  // Línea objetivo 80%
   datasets.push({
     label: 'Objetivo 80%',
     data: data.map(function(){ return 80; }),
@@ -362,7 +363,6 @@ function buildChartConfig(data){
     COLA_KEYS.forEach(function(key){
       if(!visibleColas[key]) return;
       var pts = data.map(function(d){ return d[key] ? d[key].pct : null; });
-      var inc = data.map(function(d){ return d[key] ? d[key].incumple : null; });
       datasets.push({
         label: COLA_LABELS[key],
         data: pts,
@@ -373,7 +373,7 @@ function buildChartConfig(data){
         pointHoverRadius: 7,
         fill: false,
         tension: 0.3,
-        _incumple: inc
+        _incumple: data.map(function(d){ return d[key] ? d[key].incumple : null; })
       });
     });
   }
@@ -470,6 +470,7 @@ document.querySelectorAll('.cola-toggle-btn').forEach(function(btn){
   });
 });
 
+// Redibujar al cambiar tema para actualizar colores
 document.getElementById('mo-theme-btn') && document.getElementById('mo-theme-btn')
   .addEventListener('click', function(){ setTimeout(drawChart, 50); });
 
