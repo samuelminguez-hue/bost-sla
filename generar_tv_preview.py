@@ -399,16 +399,16 @@ TV_HTML_TEMPLATE = """\
 <section class="hero">
   <div>
     <div class="hero-title">SLA TV</div>
-    <div class="hero-sub">{dia_str}, {fecha_str} &middot; Datos a las 08:30h &middot; Generado {hora_str}h</div>
+    <div class="hero-sub">Tickets sin gesti&oacute;n bajo responsabilidad SAT2 &middot; {fecha_str}</div>
   </div>
   <div class="hero-pill">⚠️ VALIDACIÓN</div>
 </section>
 
 <div class="kpi-global-block">
-  <div class="kpi-global-number">{pct_g}%</div>
+  <div class="kpi-global-number">{total_inc}</div>
   <div>
-    <div class="kpi-global-label">Cumplimiento global SLA &mdash; TV</div>
-    <div class="kpi-global-detail">{total_inc} incumplen &middot; {total_comp} computables</div>
+    <div class="kpi-global-label">tickets INCUMPLE de {total_comp} computables &nbsp;<span style="font-size:1.4rem;font-weight:700;color:{col_g}">{pct_g}% cumplimiento</span></div>
+    <div class="kpi-global-detail">Responsabilidad activa SAT2 &middot; TV (SATN2-ZL + Log&iacute;stica) &middot; SLA 24h</div>
   </div>
 </div>
 
@@ -672,7 +672,7 @@ OPITS_HTML_TEMPLATE = """\
 
 <section class="hero">
   <div class="hero-title">OPITs Activos</div>
-  <div class="hero-sub">{dia_str}, {fecha_str} &middot; Generado {hora_str}h &middot; Solo OPITs abiertos (FECHA_RESOLUCION_OPIT nula)</div>
+  <div class="hero-sub">Solo OPITs abiertos &middot; {dia_str}, {fecha_str} &middot; Generado {hora_str}h</div>
 </section>
 
 <div class="summary-block">
