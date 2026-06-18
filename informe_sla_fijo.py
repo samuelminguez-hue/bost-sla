@@ -67,7 +67,7 @@ DISPLAY_SECCIONES = [
     {
         "key":        "fijo",
         "label":      "STFIJO",
-        "sla":        "24-48h",
+        "sla":        "24h",
         "keys":       ["stfijo", "sgi", "gior"],
         "col_gestion": "fecha_ultima_gestion",
     },
@@ -649,7 +649,11 @@ HTML_TEMPLATE = """\
       if (!tabla) return;
       tabla.querySelectorAll('tbody tr').forEach(function(row) {{
         if (row.classList.contains('toggle-row')) return;
-        if (row.className.indexOf('otros-row') !== -1) return;
+        if (row.className.indexOf('otros-row') !== -1) {{
+          // En modo critico, ocultar siempre las filas expandidas de "dentro de SLA"
+          if (mode === 'critico') row.style.display = 'none';
+          return;
+        }}
         var categ = (row.dataset.categ || '').toLowerCase();
         var horas = parseFloat(row.dataset.horas) || 0;
         var matchText = !text || categ.indexOf(text) !== -1;
@@ -694,12 +698,15 @@ HTML_TEMPLATE = """\
         }});
         var csv = rows.map(function(r) {{
           return r.map(function(c) {{ return '"' + c.replace(/"/g, '""') + '"'; }}).join(',');
-        }}).join('\n');
+        }}).join('\\n');
         var blob = new Blob(['﻿' + csv], {{type: 'text/csv;charset=utf-8;'}});
         var a = document.createElement('a');
         a.href = URL.createObjectURL(blob);
         a.download = 'sla_' + sec + '_{fecha_iso}.csv';
+        document.body.appendChild(a);
         a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(a.href);
       }});
     }});
 
@@ -2171,4 +2178,8 @@ def main():
 
 
 if __name__ == "__main__":
+    # --solo-samuel: modo prueba — el email solo se envía a samuel.minguez@masorange.es
+    if "--solo-samuel" in sys.argv:
+        MAIL_TO = "samuel.minguez@masorange.es"
+        print("[TEST] Modo prueba activo — email solo a samuel.minguez@masorange.es")
     main()

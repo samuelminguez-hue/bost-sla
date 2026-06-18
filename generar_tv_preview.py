@@ -42,6 +42,20 @@ def kpi_color(pct):
 def alerta_icon(alerta):
     return {"CRITICO": "🔴", "AVISO": "🟡", "OK": "🟢"}.get(alerta, "—")
 
+def fmt_date(v):
+    """Convierte datetime/date de BQ a dd/mm/yyyy."""
+    if v is None:
+        return "—"
+    if hasattr(v, 'strftime'):
+        return v.strftime("%d/%m/%Y")
+    s = str(v)[:10]  # 'YYYY-MM-DD...' → solo fecha
+    try:
+        from datetime import date
+        d = date.fromisoformat(s)
+        return d.strftime("%d/%m/%Y")
+    except Exception:
+        return s
+
 
 # ─────────────────────────────────────────────────────────────────
 # TV.HTML — tablas SATN2-ZL y Logística
@@ -58,11 +72,11 @@ def build_tv_rows(rows, modo):
         display = esc(r.get("estado_display"))
         critico = ' class="row-critico"' if isinstance(horas, (int, float)) and horas > 96 else ""
         if modo == "base":
-            subcateg   = esc(r.get("MOTIVO_SOLICITUD"))
-            ult_gestion = esc(r.get("fecha_ultima_gestion"))
+            subcateg    = esc(r.get("MOTIVO_SOLICITUD"))
+            ult_gestion = fmt_date(r.get("fecha_ultima_gestion"))
         else:
-            subcateg   = esc(r.get("estado_logistica"))
-            ult_gestion = esc(r.get("fecha_inicio_reloj"))
+            subcateg    = esc(r.get("estado_logistica"))
+            ult_gestion = fmt_date(r.get("fecha_inicio_reloj"))
         return (
             f'<tr{critico}{hidden_cls} data-horas="{horas}">'
             f'<td><a href="https://tgjira.masmovil.com/browse/{clave}" target="_blank">{clave}</a></td>'
@@ -148,7 +162,7 @@ def build_opit_rows(rows):
             f'<tr{fila_cls}>'
             f'<td><a href="https://tgjira.masmovil.com/browse/{clave}" target="_blank">{clave}</a></td>'
             f'<td>{marca}</td>'
-            f'<td><a href="https://joranext.masmovil.com/browse/{opit}" target="_blank">{opit}</a></td>'
+            f'<td><a href="https://jiranext.masmovil.com/browse/{opit}" target="_blank">{opit}</a></td>'
             f'<td>{status}</td>'
             f'<td>{prio}</td>'
             f'<td style="font-weight:700">{dias}d</td>'
@@ -662,25 +676,17 @@ OPITS_HTML_TEMPLATE = """\
 </section>
 
 <div class="summary-block">
-  <div class="sum-item">
+  <div class="sum-item" style="border-right:1px solid var(--mo-border);padding-right:28px;margin-right:4px">
     <span class="sum-num">{total_all}</span>
-    <span class="sum-label">OPITs abiertos total</span>
+    <span class="sum-label">OPITs abiertos</span>
   </div>
   <div class="sum-item">
     <span class="sum-num" style="color:#1565C0">{total_tv}</span>
-    <span class="sum-label">TV</span>
+    <span class="sum-label">TV &nbsp;<span style="font-size:.78rem;font-weight:400;color:#C62828">🔴 {criticos_tv}</span> <span style="font-size:.78rem;font-weight:400;color:#E65100">🟡 {avisos_tv}</span></span>
   </div>
   <div class="sum-item">
     <span class="sum-num" style="color:#FF5900">{total_fijo}</span>
-    <span class="sum-label">Fijo</span>
-  </div>
-  <div class="sum-item">
-    <span class="sum-num" style="color:#C62828">{criticos_tv} TV / {criticos_fijo} Fijo</span>
-    <span class="sum-label">🔴 &gt;10 d&iacute;as (cr&iacute;tico)</span>
-  </div>
-  <div class="sum-item">
-    <span class="sum-num" style="color:#E65100">{avisos_tv} TV / {avisos_fijo} Fijo</span>
-    <span class="sum-label">🟡 &gt;5 d&iacute;as (aviso)</span>
+    <span class="sum-label">Fijo &nbsp;<span style="font-size:.78rem;font-weight:400;color:#C62828">🔴 {criticos_fijo}</span> <span style="font-size:.78rem;font-weight:400;color:#E65100">🟡 {avisos_fijo}</span></span>
   </div>
 </div>
 
