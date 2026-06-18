@@ -54,25 +54,21 @@ def build_tv_rows(rows, modo):
 
     def fila(r, hidden_cls=""):
         clave   = esc(r.get("CLAVE"))
-        marca   = esc(r.get("MARCA"))
         horas   = r.get("horas_sin_gestion") or "—"
         display = esc(r.get("estado_display"))
         critico = ' class="row-critico"' if isinstance(horas, (int, float)) and horas > 96 else ""
         if modo == "base":
-            categ  = esc(r.get("MOTIVO_SOLICITUD"))
-            fsm    = esc(r.get("FSM_STATUS"))
-            origen = esc(r.get("origen_reloj"))
-            extra  = f"<td>{categ}</td><td>{fsm}</td><td>{origen}</td>"
+            subcateg   = esc(r.get("MOTIVO_SOLICITUD"))
+            ult_gestion = esc(r.get("fecha_ultima_gestion"))
         else:
-            estado_log = esc(r.get("estado_logistica"))
-            origen     = esc(r.get("origen_reloj"))
-            extra      = f"<td>{estado_log}</td><td>{origen}</td>"
+            subcateg   = esc(r.get("estado_logistica"))
+            ult_gestion = esc(r.get("fecha_inicio_reloj"))
         return (
             f'<tr{critico}{hidden_cls} data-horas="{horas}">'
             f'<td><a href="https://tgjira.masmovil.com/browse/{clave}" target="_blank">{clave}</a></td>'
-            f'<td>{marca}</td>'
-            f'{extra}'
+            f'<td>{subcateg}</td>'
             f'<td style="font-weight:{"700;color:#C62828" if horas != "—" and isinstance(horas,(int,float)) and horas > 24 else "normal"}">{horas}h</td>'
+            f'<td>{ult_gestion}</td>'
             f'<td>{display}</td>'
             f'</tr>\n'
         )
@@ -440,9 +436,8 @@ TV_HTML_TEMPLATE = """\
   <div class="tabla-wrap">
     <table class="mo-table" id="tabla-tv_base">
       <thead><tr>
-        <th>Ticket</th><th>Marca</th><th>Subcategor&iacute;a</th>
-        <th>FSM Status</th><th>Origen reloj</th>
-        <th>Horas sin gesti&oacute;n</th><th>Estado</th>
+        <th>Ticket</th><th>Subcategor&iacute;a</th>
+        <th>Horas sin gesti&oacute;n</th><th>&Uacute;ltima gesti&oacute;n</th><th>Estado</th>
       </tr></thead>
       <tbody>{rows_base}</tbody>
     </table>
@@ -466,8 +461,8 @@ TV_HTML_TEMPLATE = """\
   <div class="tabla-wrap">
     <table class="mo-table" id="tabla-tv_log">
       <thead><tr>
-        <th>Ticket</th><th>Marca</th><th>Estado Log&iacute;stica</th>
-        <th>Origen reloj</th><th>Horas sin gesti&oacute;n</th><th>Estado</th>
+        <th>Ticket</th><th>Subcategor&iacute;a</th>
+        <th>Horas sin gesti&oacute;n</th><th>&Uacute;ltima gesti&oacute;n</th><th>Estado</th>
       </tr></thead>
       <tbody>{rows_log}</tbody>
     </table>
