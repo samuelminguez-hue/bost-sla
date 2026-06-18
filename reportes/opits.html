@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OPITs Activos &mdash; 18/06/2026 &mdash; MasOrange</title>
+  <style>
+    :root {
+      --mo-orange:#FF5900; --mo-black:#000; --mo-white:#fff;
+      --mo-gray-light:#F2F2F2; --text-main:#111; --text-muted:#666;
+      --mo-border:#e0e0e0; --bg-strip:#fafafa; --nav-h:56px;
+    }
+    [data-theme="dark"] {
+      --mo-white:#111; --mo-gray-light:#1a1a1a; --text-main:#f0f0f0;
+      --text-muted:#aaa; --mo-border:#333; --bg-strip:#1c1c1c;
+    }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:Arial,Helvetica,sans-serif; background:var(--mo-gray-light); color:var(--text-main); }
+    .mo-nav { position:sticky;top:0;z-index:100;background:#000;height:var(--nav-h);
+               display:flex;align-items:center;justify-content:space-between;padding:0 24px;gap:16px; }
+    .mo-nav-brand { color:#fff;font-weight:700;font-size:.9rem; }
+    .mo-nav-links { list-style:none;display:flex;gap:4px; }
+    .mo-nav-links li a { color:#ccc;text-decoration:none;font-size:.82rem;font-weight:600;
+                          padding:6px 14px;border-radius:4px;transition:background .15s; }
+    .mo-nav-links li a:hover { background:rgba(255,255,255,.1);color:#fff; }
+    .mo-nav-links li a.active { background:var(--mo-orange);color:#fff; }
+    .mo-logo { width:64px;height:auto;flex-shrink:0; }
+    .mo-theme-btn { background:none;border:1px solid #555;color:#ccc;border-radius:4px;
+                     padding:5px 10px;font-size:.75rem;cursor:pointer; }
+    .hero { background:#000;padding:32px 24px 28px; }
+    .hero-title { color:#fff;font-size:1.75rem;font-weight:700; }
+    .hero-sub { color:#aaa;font-size:.85rem;margin-top:4px; }
+    .summary-block { background:var(--mo-white);border-radius:8px;margin:20px 20px 0;
+                      padding:16px 24px;display:flex;gap:32px;flex-wrap:wrap;
+                      border-left:5px solid var(--mo-orange);box-shadow:0 1px 4px rgba(0,0,0,.06); }
+    .sum-item { display:flex;flex-direction:column; }
+    .sum-num { font-size:2rem;font-weight:700; }
+    .sum-label { font-size:.8rem;color:var(--text-muted);margin-top:2px; }
+    .tab-bar { display:flex;gap:8px;padding:16px 20px 0; }
+    .tab-btn { padding:8px 20px;border-radius:6px 6px 0 0;border:none;font-weight:700;
+                font-size:.85rem;cursor:pointer;background:var(--mo-white);color:var(--text-muted); }
+    .tab-btn.active { background:var(--mo-orange);color:#fff; }
+    .tab-panel { display:none;padding:0 20px 32px; }
+    .tab-panel.active { display:block; }
+    .tabla-wrap { overflow-x:auto;margin-top:12px; }
+    .mo-table { width:100%;border-collapse:collapse;font-size:.875rem; }
+    .mo-table th { background:#000;color:#fff;padding:.7rem 1rem;text-align:left;font-size:.8rem; }
+    .mo-table td { padding:.65rem 1rem;border-bottom:1px solid var(--mo-border); }
+    .mo-table tr:nth-child(even) td { background:var(--bg-strip); }
+    .mo-table tr:hover td { background:rgba(255,89,0,.08); }
+    .mo-table a { color:var(--mo-orange);text-decoration:none; }
+    .row-critico td { background:rgba(198,40,40,.07) !important; }
+    .legend { font-size:.78rem;color:var(--text-muted);margin-top:10px; }
+    .mo-footer { background:#000;color:#fff;padding:20px 24px;display:flex;
+                  justify-content:space-between;align-items:center;flex-wrap:wrap;
+                  gap:12px;margin-top:32px;font-size:.8rem; }
+    .mo-footer a { color:#aaa;text-decoration:none; }
+  </style>
+</head>
+<body>
+<nav class="mo-nav">
+  <div style="display:flex;align-items:center;gap:20px">
+    <span class="mo-nav-brand">BOST &middot; SLA Dashboard</span>
+    <ul class="mo-nav-links">
+      <li><a href="global.html">Global</a></li>
+      <li><a href="fijo.html">Fijo</a></li>
+      <li><a href="tv.html">TV</a></li>
+      <li><a href="opits.html" class="active">OPITs</a></li>
+    </ul>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <button class="mo-theme-btn" id="mo-theme-btn">☽ Modo oscuro</button>
+    <svg class="mo-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 68">
+      <rect x="4"  y="24" width="16" height="16" fill="#FF5900"/>
+      <rect x="20" y="8"  width="16" height="16" fill="#FF5900"/>
+      <rect x="20" y="24" width="16" height="16" fill="#FF5900"/>
+      <rect x="20" y="40" width="16" height="16" fill="#FF5900"/>
+      <rect x="36" y="24" width="16" height="16" fill="#FF5900"/>
+      <circle cx="104" cy="34" r="28" fill="none" stroke="#fff" stroke-width="10"/>
+    </svg>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-title">OPITs Activos</div>
+  <div class="hero-sub">Jueves, 18/06/2026 &middot; Generado 11:15h &middot; Solo OPITs abiertos (FECHA_RESOLUCION_OPIT nula)</div>
+</section>
+
+<div class="summary-block">
+  <div class="sum-item">
+    <span class="sum-num">9</span>
+    <span class="sum-label">OPITs abiertos total</span>
+  </div>
+  <div class="sum-item">
+    <span class="sum-num" style="color:#1565C0">0</span>
+    <span class="sum-label">TV</span>
+  </div>
+  <div class="sum-item">
+    <span class="sum-num" style="color:#FF5900">9</span>
+    <span class="sum-label">Fijo</span>
+  </div>
+  <div class="sum-item">
+    <span class="sum-num" style="color:#C62828">0 TV / 9 Fijo</span>
+    <span class="sum-label">🔴 &gt;10 d&iacute;as (cr&iacute;tico)</span>
+  </div>
+  <div class="sum-item">
+    <span class="sum-num" style="color:#E65100">0 TV / 0 Fijo</span>
+    <span class="sum-label">🟡 &gt;5 d&iacute;as (aviso)</span>
+  </div>
+</div>
+
+<div class="tab-bar">
+  <button class="tab-btn active" data-tab="tv">TV (0)</button>
+  <button class="tab-btn" data-tab="fijo">Fijo (9)</button>
+</div>
+
+<div id="panel-tv" class="tab-panel active">
+  <div class="tabla-wrap">
+    <table class="mo-table">
+      <thead><tr>
+        <th>Ticket</th><th>Marca</th><th>OPIT</th><th>Estado OPIT</th>
+        <th>Prioridad</th><th>D&iacute;as abierto</th><th>Alerta</th><th>Resumen</th>
+      </tr></thead>
+      <tbody><tr><td colspan="8" style="text-align:center;color:#999;padding:1.5rem">Sin OPITs abiertos hoy</td></tr>
+</tbody>
+    </table>
+  </div>
+  <div class="legend">🔴 &gt;10 d&iacute;as &middot; 🟡 &gt;5 d&iacute;as &middot; 🟢 OK &middot; Los tickets siguen computando en SLA normal</div>
+</div>
+
+<div id="panel-fijo" class="tab-panel">
+  <div class="tabla-wrap">
+    <table class="mo-table">
+      <thead><tr>
+        <th>Ticket</th><th>Marca</th><th>OPIT</th><th>Estado OPIT</th>
+        <th>Prioridad</th><th>D&iacute;as abierto</th><th>Alerta</th><th>Resumen</th>
+      </tr></thead>
+      <tbody><tr class="row-critico"><td><a href="https://tgjira.masmovil.com/browse/ATC-8218053" target="_blank">ATC-8218053</a></td><td>YOIGO</td><td><a href="https://tgjira.masmovil.com/browse/OPIT-590177" target="_blank">OPIT-590177</a></td><td>ANALISIS N2</td><td>MEDIUM</td><td style="font-weight:700">924d</td><td style="font-size:1.1rem">🔴</td><td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="[TR] [OPSTYG][Error activacion nueva numeracion] Multisim - Iwatch - No es posible activar los datos moviles en el Apple Watch con tu cuenta de yoigo">[TR] [OPSTYG][Error activacion nueva numeracion] Multisim - Iwatch - No es posible activar los datos moviles en el Apple Watch con tu cuenta de yoigo</td></tr>
+<tr class="row-critico"><td><a href="https://tgjira.masmovil.com/browse/ATC-8055670" target="_blank">ATC-8055670</a></td><td>LEBARA</td><td><a href="https://tgjira.masmovil.com/browse/OPIT-768913" target="_blank">OPIT-768913</a></td><td>ESCALADA EXTERNO</td><td>MEDIUM</td><td style="font-weight:700">587d</td><td style="font-size:1.1rem">🔴</td><td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="[OPSTPrepagoQvantel][PREPAGO] Problemas con bonos y ampliaciones - no puede llamar al extranjero, numeraciones de Europa">[OPSTPrepagoQvantel][PREPAGO] Problemas con bonos y ampliaciones - no puede llamar al extranjero, numeraciones de Europa</td></tr>
+<tr class="row-critico"><td><a href="https://tgjira.masmovil.com/browse/ATC-7812720" target="_blank">ATC-7812720</a></td><td>MASMOVIL</td><td><a href="https://tgjira.masmovil.com/browse/MSUBS-8608" target="_blank">MSUBS-8608</a></td><td>IN PROGRESS</td><td>MEDIUM</td><td style="font-weight:700">554d</td><td style="font-size:1.1rem">🔴</td><td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="[TR] [OPSTYG][Error al cambiar el ICC][POSTPAGO] Duplicado de Multisim no avanza correctamente en CRM y RED">[TR] [OPSTYG][Error al cambiar el ICC][POSTPAGO] Duplicado de Multisim no avanza correctamente en CRM y RED</td></tr>
+<tr class="row-critico"><td><a href="https://tgjira.masmovil.com/browse/ATC-8063834" target="_blank">ATC-8063834</a></td><td>LEBARA</td><td><a href="https://tgjira.masmovil.com/browse/OPIT-696902" target="_blank">OPIT-696902</a></td><td>ESCALADA EXTERNO</td><td>MEDIUM</td><td style="font-weight:700">428d</td><td style="font-size:1.1rem">🔴</td><td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="[TR] [OPSTPrepagoQvantel][PREPAGO] Problemas con bonos y ampliaciones - no puede llamar al extranjero, numeraciones de Sudamérica / Centroamérica y Norteamérica">[TR] [OPSTPrepagoQvantel][PREPAGO] Problemas con bonos y ampliaciones - no puede llamar al extranjero, numeraciones de Sudamérica / Centroamérica y Norteamérica</td></tr>
+<tr class="row-critico"><td><a href="https://tgjira.masmovil.com/browse/ATC-8067489" target="_blank">ATC-8067489</a></td><td>LEBARA</td><td><a href="https://tgjira.masmovil.com/browse/OPIT-696902" target="_blank">OPIT-696902</a></td><td>ESCALADA EXTERNO</td><td>MEDIUM</td><td style="font-weight:700">428d</td><td style="font-size:1.1rem">🔴</td><td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="[TR] [OPSTPrepagoQvantel][PREPAGO] Problemas con bonos y ampliaciones - no puede llamar al extranjero, numeraciones de Sudamérica / Centroamérica y Norteamérica">[TR] [OPSTPrepagoQvantel][PREPAGO] Problemas con bonos y ampliaciones - no puede llamar al extranjero, numeraciones de Sudamérica / Centroamérica y Norteamérica</td></tr>
+<tr class="row-critico"><td><a href="https://tgjira.masmovil.com/browse/ATC-8054668" target="_blank">ATC-8054668</a></td><td>LEBARA</td><td><a href="https://tgjira.masmovil.com/browse/OPIT-698071" target="_blank">OPIT-698071</a></td><td>ESCALADA EXTERNO</td><td>MEDIUM</td><td style="font-weight:700">423d</td><td style="font-size:1.1rem">🔴</td><td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="[TR] [OPST Prepago Qvantel] Problemas con bonos y ampliaciones - No puede realizar llamadas internacionales a Asia">[TR] [OPST Prepago Qvantel] Problemas con bonos y ampliaciones - No puede realizar llamadas internacionales a Asia</td></tr>
+<tr class="row-critico"><td><a href="https://tgjira.masmovil.com/browse/ATC-8063789" target="_blank">ATC-8063789</a></td><td>LYCAMOBILE</td><td><a href="https://tgjira.masmovil.com/browse/PQVAN-1109" target="_blank">PQVAN-1109</a></td><td>ANALISIS N3</td><td>MEDIUM</td><td style="font-weight:700">64d</td><td style="font-size:1.1rem">🔴</td><td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="[OPSTPrepagoQvantel][PREPAGO]Error al cambiar el ICC-Cambio de ICC aparece como deshabilitada desde ATC">[OPSTPrepagoQvantel][PREPAGO]Error al cambiar el ICC-Cambio de ICC aparece como deshabilitada desde ATC</td></tr>
+<tr class="row-critico"><td><a href="https://tgjira.masmovil.com/browse/ATC-8369581" target="_blank">ATC-8369581</a></td><td>MASMOVIL</td><td><a href="https://tgjira.masmovil.com/browse/MYS-32931" target="_blank">MYS-32931</a></td><td>ANALYZING</td><td>MEDIUM</td><td style="font-weight:700">32d</td><td style="font-size:1.1rem">🔴</td><td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="[OPSTMM][Error en crm durante la portabilidad][POSTPAGO]Portabilidad entremarcas con 'Error en la base de datos' en operación VENTA POR PORTABILIDAD ">[OPSTMM][Error en crm durante la portabilidad][POSTPAGO]Portabilidad entremarcas con 'Error en la base de datos' en operación VENTA POR PORTABILIDAD </td></tr>
+<tr class="row-critico"><td><a href="https://tgjira.masmovil.com/browse/ATC-8566254" target="_blank">ATC-8566254</a></td><td>LEBARA</td><td><a href="https://tgjira.masmovil.com/browse/OPIT-901611" target="_blank">OPIT-901611</a></td><td>IN PROGRESS</td><td>MEDIUM</td><td style="font-weight:700">17d</td><td style="font-size:1.1rem">🔴</td><td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="[OPSTPrepagoQvantel][PREPAGO]Recuperar Línea Ciclo de Vida-Prepago Junio 2026">[OPSTPrepagoQvantel][PREPAGO]Recuperar Línea Ciclo de Vida-Prepago Junio 2026</td></tr>
+</tbody>
+    </table>
+  </div>
+  <div class="legend">🔴 &gt;10 d&iacute;as &middot; 🟡 &gt;5 d&iacute;as &middot; 🟢 OK &middot; Los tickets siguen computando en SLA normal</div>
+</div>
+
+<footer class="mo-footer">
+  <span>Generado autom&aacute;ticamente &middot; BOST MasOrange &middot; 18/06/2026 11:15h</span>
+  <div style="display:flex;gap:16px">
+    <a href="global.html">Global</a>
+    <a href="fijo.html">Fijo</a>
+    <a href="tv.html">TV</a>
+  </div>
+</footer>
+
+<script>
+(function() {
+  var btn = document.getElementById('mo-theme-btn');
+  var html = document.documentElement;
+  var dark = localStorage.getItem('mo-theme') === 'dark' ||
+    (!localStorage.getItem('mo-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  function apply(d) {
+    html.setAttribute('data-theme', d ? 'dark' : 'light');
+    btn.textContent = d ? '☀ Modo claro' : '☽ Modo oscuro';
+    localStorage.setItem('mo-theme', d ? 'dark' : 'light');
+  }
+  apply(dark);
+  btn.addEventListener('click', function() { dark = !dark; apply(dark); });
+})();
+
+document.querySelectorAll('.tab-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    var tab = btn.getAttribute('data-tab');
+    document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+    document.querySelectorAll('.tab-panel').forEach(function(p) { p.classList.remove('active'); });
+    btn.classList.add('active');
+    document.getElementById('panel-' + tab).classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
