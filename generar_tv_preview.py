@@ -148,7 +148,7 @@ def build_opit_rows(rows):
             f'<tr{fila_cls}>'
             f'<td><a href="https://tgjira.masmovil.com/browse/{clave}" target="_blank">{clave}</a></td>'
             f'<td>{marca}</td>'
-            f'<td><a href="https://tgjira.masmovil.com/browse/{opit}" target="_blank">{opit}</a></td>'
+            f'<td><a href="https://joranext.masmovil.com/browse/{opit}" target="_blank">{opit}</a></td>'
             f'<td>{status}</td>'
             f'<td>{prio}</td>'
             f'<td style="font-weight:700">{dias}d</td>'
