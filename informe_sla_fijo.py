@@ -93,12 +93,7 @@ def run_query(client, sql_path):
 # HELPERS HTML
 # ─────────────────────────────────────────────────────────────────
 def kpi_color(pct):
-    if pct >= 80:
-        return "#2E7D32"   # verde
-    elif pct >= 50:
-        return "#FF5900"   # naranja MasOrange
-    else:
-        return "#C62828"   # rojo
+    return "#2E7D32" if pct >= 80 else "#C62828"
 
 
 def escape_html(value):

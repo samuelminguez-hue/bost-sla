@@ -35,9 +35,7 @@ def esc(v):
     return str(v).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 def kpi_color(pct):
-    if pct >= 80:   return "#2E7D32"
-    if pct >= 50:   return "#FF5900"
-    return "#C62828"
+    return "#2E7D32" if pct >= 80 else "#C62828"
 
 def alerta_icon(alerta):
     return {"CRITICO": "🔴", "AVISO": "🟡", "OK": "🟢"}.get(alerta, "—")
