@@ -144,9 +144,12 @@
       padding: 1.5rem var(--mo-margin) 0;
     }
     .kpi-global {
-      background: var(--bg-card); border-radius: 4px;
+      background: var(--bg-card); border-radius: 8px; display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap;
       padding: 1.25rem 1.75rem; box-shadow: var(--mo-shadow-sm);
     }
+    .kpi-global-number { font-size: 2.8rem; font-weight: 700; line-height: 1; flex-shrink: 0; }
+    .kpi-global-info { flex: 1; min-width: 0; }
+    .kpi-global-detail { font-size: 0.8rem; color: var(--text-muted); margin-top: 3px; }
     .kpi-global-label {
       font-size: 0.72rem; font-weight: 700;
       text-transform: uppercase; letter-spacing: 0.05em;
@@ -154,7 +157,7 @@
     }
     .kpi-global-num  { font-size: 2.4rem; font-weight: 700; line-height: 1; }
     .kpi-global-sub  { font-size: 0.9rem; color: var(--text-muted); }
-    .kpi-global-pct  { font-size: 1.1rem; font-weight: 700; }
+    .kpi-global-pct  { font-size: 1.4rem; font-weight: 700; }
 
     /* ── KPI GRID ───────────────────────────────────────────────── */
     .kpi-grid {
@@ -163,7 +166,7 @@
       background: var(--bg-strip);
     }
     .kpi-card {
-      background: var(--bg-card); border-radius: 4px;
+      background: var(--bg-card); border-radius: 8px;
       padding: 1.25rem 1.5rem; box-shadow: var(--mo-shadow-sm);
     }
     .kpi-label {
@@ -174,6 +177,8 @@
     .kpi-incumple { font-size: 2.8rem; font-weight: 700; line-height: 1; margin-bottom: 0.2rem; }
     .kpi-sub     { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.6rem; }
     .kpi-pct     { font-size: 0.95rem; font-weight: 700; }
+    .kpi-bar     { height: 3px; background: var(--border-subtle,#e0e0e0); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+    .kpi-bar-fill { height: 3px; border-radius: 3px; }
 
     /* ── SECCIONES ──────────────────────────────────────────────── */
     .tabla-seccion { padding: 2.5rem var(--mo-margin) 0; }
@@ -333,8 +338,7 @@
 
   <!-- KPI GLOBAL -->
   <div class="kpi-global-wrap">
-    <div class="kpi-global" style="border-left:6px solid #C62828"><div class="kpi-global-label">Resumen global &middot; todas las colas</div><div style="display:flex;align-items:baseline;gap:1.5rem;flex-wrap:wrap"><div><span class="kpi-global-num" style="color:#C62828">274</span><span class="kpi-global-sub"> tickets INCUMPLE de 1221 computables</span></div><div class="kpi-global-pct" style="color:#C62828">77.6% cumplimiento global</div></div><div style="margin-top:0.6rem;font-size:0.78rem;color:var(--text-muted)">Tickets bajo responsabilidad activa de SAT2 (excluidos: contrata con cita activa, proveedor externo en gesti&oacute;n). Medici&oacute;n: INCUMPLE si supera el SLA de cada cola sin gesti&oacute;n registrada.</div></div>
-  </div>
+    <div class="kpi-global"><div class="kpi-global-number" style="color:#C62828">274</div><div class="kpi-global-info"><div class="kpi-global-label">tickets INCUMPLE de 1221 computables &nbsp;<span style="font-size:1.4rem;font-weight:700;color:#C62828">77.6% cumplimiento global</span></div><div class="kpi-global-detail">Responsabilidad activa SAT2 &middot; STFIJO + Log&iacute;stica &middot; SLA 24h</div></div></div>
 
   <!-- KPI CARDS -->
   <div class="kpi-grid">

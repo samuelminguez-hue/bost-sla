@@ -165,7 +165,7 @@ def generate_html(results, now):
 
     # KPI cards
     kpi_html = ""
-    for sec in DISPLAY_SECCIONES:
+    for kpi_i, sec in enumerate(DISPLAY_SECCIONES):
         key  = sec["key"]
         rows = results[key]
 
@@ -182,12 +182,14 @@ def generate_html(results, now):
         pct      = round(100 * (pct_base - incumple) / pct_base, 1) if pct_base > 0 else 100.0
         color    = kpi_color(pct)
 
+        bar_pct = min(100, max(0, pct))
         kpi_html += (
-            f'<div class="kpi-card" style="border-top:4px solid {color}">'
+            f'<div class="kpi-card" style="--i:{kpi_i};border-top:4px solid {color}">'
             f'<div class="kpi-label">{sec["label"]} · SLA {sec["sla"]}</div>'
             f'<div class="kpi-incumple" style="color:{color}">{incumple}</div>'
             f'<div class="kpi-sub">de {total_label} tickets</div>'
             f'<div class="kpi-pct" style="color:{color}">{pct}% cumplimiento</div>'
+            f'<div class="kpi-bar"><div class="kpi-bar-fill" style="width:{bar_pct}%;background:{color}"></div></div>'
             f'</div>\n'
         )
 
@@ -254,19 +256,16 @@ def generate_html(results, now):
     color_global = kpi_color(pct_global)
 
     kpi_global_html = (
-        f'<div class="kpi-global" style="border-left:6px solid {color_global}">'
-        f'<div class="kpi-global-label">Resumen global &middot; todas las colas</div>'
-        f'<div style="display:flex;align-items:baseline;gap:1.5rem;flex-wrap:wrap">'
-        f'<div>'
-        f'<span class="kpi-global-num" style="color:{color_global}">{total_global_incumple}</span>'
-        f'<span class="kpi-global-sub"> tickets INCUMPLE de {total_global_computables} computables</span>'
+        f'<div class="kpi-global">'
+        f'<div class="kpi-global-number" style="color:{color_global}">{total_global_incumple}</div>'
+        f'<div class="kpi-global-info">'
+        f'<div class="kpi-global-label">'
+        f'tickets INCUMPLE de {total_global_computables} computables &nbsp;'
+        f'<span style="font-size:1.4rem;font-weight:700;color:{color_global}">{pct_global}% cumplimiento global</span>'
         f'</div>'
-        f'<div class="kpi-global-pct" style="color:{color_global}">{pct_global}% cumplimiento global</div>'
+        f'<div class="kpi-global-detail">'
+        f'Responsabilidad activa SAT2 &middot; STFIJO + Log&iacute;stica &middot; SLA 24h'
         f'</div>'
-        f'<div style="margin-top:0.6rem;font-size:0.78rem;color:var(--text-muted)">'
-        f'Tickets bajo responsabilidad activa de SAT2 (excluidos: contrata con cita activa, '
-        f'proveedor externo en gesti&oacute;n). '
-        f'Medici&oacute;n: INCUMPLE si supera el SLA de cada cola sin gesti&oacute;n registrada.'
         f'</div>'
         f'</div>'
     )
@@ -431,17 +430,19 @@ HTML_TEMPLATE = """\
       padding: 1.5rem var(--mo-margin) 0;
     }}
     .kpi-global {{
-      background: var(--bg-card); border-radius: 4px;
+      background: var(--bg-card); border-radius: 8px;
       padding: 1.25rem 1.75rem; box-shadow: var(--mo-shadow-sm);
+      display: flex; align-items: center; gap: 1.5rem; flex-wrap: wrap;
     }}
+    .kpi-global-number {{ font-size: 2.8rem; font-weight: 700; line-height: 1; flex-shrink: 0; }}
+    .kpi-global-info {{ flex: 1; min-width: 0; }}
     .kpi-global-label {{
-      font-size: 0.72rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.05em;
-      color: var(--text-muted); margin-bottom: 0.6rem;
+      font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.2rem;
     }}
-    .kpi-global-num  {{ font-size: 2.4rem; font-weight: 700; line-height: 1; }}
+    .kpi-global-detail {{ font-size: 0.8rem; color: var(--text-muted); margin-top: 3px; }}
+    .kpi-global-num  {{ font-size: 2.8rem; font-weight: 700; line-height: 1; }}
     .kpi-global-sub  {{ font-size: 0.9rem; color: var(--text-muted); }}
-    .kpi-global-pct  {{ font-size: 1.1rem; font-weight: 700; }}
+    .kpi-global-pct  {{ font-size: 1.4rem; font-weight: 700; }}
 
     /* ── KPI GRID ───────────────────────────────────────────────── */
     .kpi-grid {{
@@ -450,7 +451,7 @@ HTML_TEMPLATE = """\
       background: var(--bg-strip);
     }}
     .kpi-card {{
-      background: var(--bg-card); border-radius: 4px;
+      background: var(--bg-card); border-radius: 8px;
       padding: 1.25rem 1.5rem; box-shadow: var(--mo-shadow-sm);
     }}
     .kpi-label {{
@@ -459,8 +460,10 @@ HTML_TEMPLATE = """\
       color: var(--text-muted); margin-bottom: 0.6rem;
     }}
     .kpi-incumple {{ font-size: 2.8rem; font-weight: 700; line-height: 1; margin-bottom: 0.2rem; }}
-    .kpi-sub     {{ font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.6rem; }}
+    .kpi-sub     {{ font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.2rem; }}
     .kpi-pct     {{ font-size: 0.95rem; font-weight: 700; }}
+    .kpi-bar     {{ height: 3px; background: var(--border-subtle, #e0e0e0); border-radius: 2px; margin-top: 8px; overflow: hidden; }}
+    .kpi-bar-fill {{ height: 3px; border-radius: 3px; }}
 
     /* ── SECCIONES ──────────────────────────────────────────────── */
     .tabla-seccion {{ padding: 2.5rem var(--mo-margin) 0; }}
