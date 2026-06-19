@@ -53,7 +53,7 @@ if (-not $status) {
 }
 
 & $git commit -m "Informe diario $fecha" 2>&1 | ForEach-Object { Log $_ }
-& $git push origin master:main 2>&1 | ForEach-Object { Log $_ }
+& $git push origin main 2>&1 | ForEach-Object { Log $_ }
 
 if ($LASTEXITCODE -eq 0) {
     Log "GitHub Pages actualizado OK -> https://samuelminguez-hue.github.io/bost-sla/"

@@ -296,6 +296,9 @@ HTML_TEMPLATE = """\
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Informe SLA Fijo &mdash; {fecha_informe} &mdash; MasOrange</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     /* ── TOKENS MARCA ───────────────────────────────────────────── */
     :root {{
@@ -316,7 +319,7 @@ HTML_TEMPLATE = """\
       --text-muted:      #999999;
       --border-main:     #000000;
       --border-subtle:   #E0E0E0;
-      --nav-bg:          #FFFFFF;
+      --nav-bg:          rgba(255,255,255,0.88);
       --mo-circle-color: #000000;   /* O del logo: negro en claro */
     }}
 
@@ -330,7 +333,7 @@ HTML_TEMPLATE = """\
         --text-muted:      #888888;
         --border-main:     #FFFFFF;
         --border-subtle:   #2a2a2a;
-        --nav-bg:          #0d0d0d;
+        --nav-bg:          rgba(13,13,13,0.88);
         --mo-circle-color: #FFFFFF; /* O del logo: blanco en oscuro */
       }}
     }}
@@ -344,7 +347,7 @@ HTML_TEMPLATE = """\
       --text-muted:      #888888;
       --border-main:     #FFFFFF;
       --border-subtle:   #2a2a2a;
-      --nav-bg:          #0d0d0d;
+      --nav-bg:          rgba(13,13,13,0.88);
       --mo-circle-color: #FFFFFF;
     }}
     [data-theme="light"] {{
@@ -360,7 +363,7 @@ HTML_TEMPLATE = """\
     }}
 
     /* ── RESET ──────────────────────────────────────────────────── */
-    * {{ font-family: Arial, Helvetica, sans-serif; box-sizing: border-box; margin: 0; padding: 0; }}
+    * {{ font-family: 'Outfit', Arial, Helvetica, sans-serif; box-sizing: border-box; margin: 0; padding: 0; }}
     body {{ background: var(--bg-page); color: var(--text-main); font-size: 1rem; line-height: 1.5; transition: background .2s, color .2s; }}
     a {{ color: var(--mo-orange); text-decoration: none; }}
     a:hover {{ text-decoration: underline; }}
@@ -543,6 +546,47 @@ HTML_TEMPLATE = """\
     /* ── RESPONSIVE ─────────────────────────────────────────────── */
     @media (max-width: 900px) {{ .kpi-grid {{ grid-template-columns: repeat(2,1fr); }} }}
     @media (max-width: 540px) {{ .kpi-grid {{ grid-template-columns: 1fr; }} }}
+
+    /* ══ REDESIGN VISUAL ══════════════════════════════════════════ */
+    html {{ scroll-behavior: smooth; }}
+    .mo-nav {{ backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }}
+    .mo-hero h1 {{ letter-spacing: -0.02em; }}
+    .kpi-num, .kpi-incumple, .kpi-global-num {{
+      font-variant-numeric: tabular-nums; font-feature-settings: "tnum";
+    }}
+    @keyframes fadeUp {{
+      from {{ opacity: 0; transform: translateY(12px); }}
+      to   {{ opacity: 1; transform: translateY(0); }}
+    }}
+    .kpi-card {{
+      transition: transform 200ms cubic-bezier(0.4,0,0.2,1), box-shadow 200ms;
+      animation: fadeUp 0.35s ease forwards;
+      animation-delay: calc(var(--i, 0) * 70ms);
+      opacity: 0;
+    }}
+    .kpi-card:hover {{
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255,89,0,0.12);
+    }}
+    .mo-table tbody tr {{ transition: transform 150ms ease; }}
+    .mo-table tbody tr:hover td {{ background: rgba(255,89,0,0.06) !important; }}
+    .mo-table tbody tr:hover {{ transform: translateX(3px); }}
+    .mo-table tbody tr:hover td:first-child {{ border-left: 3px solid #FF5900; padding-left: calc(1rem - 3px); }}
+    .mo-table th {{
+      background: var(--bg-strip) !important;
+      color: var(--text-main) !important;
+      border-bottom: 2px solid var(--mo-orange);
+    }}
+    .tabla-filter-btn, .mo-theme-btn, .btn-export-csv {{
+      transition: all 150ms ease;
+    }}
+    .tabla-filter-btn:active, .mo-theme-btn:active, .btn-export-csv:active {{
+      transform: scale(0.97);
+    }}
+    .tabla-filter-input:focus-visible, .tabla-filter-btn:focus-visible,
+    .mo-theme-btn:focus-visible, .btn-export-csv:focus-visible {{
+      outline: 2px solid var(--mo-orange); outline-offset: 2px;
+    }}
   </style>
 </head>
 <body>
@@ -554,7 +598,8 @@ HTML_TEMPLATE = """\
       <ul class="mo-nav-links">
         <li><a href="global.html">Global</a></li>
         <li><a href="#" class="active">Fijo</a></li>
-        <li><a href="tv.html" class="disabled" title="Próximamente">TV</a></li>
+        <li><a href="tv.html">TV</a></li>
+        <li><a href="opits.html">OPITs</a></li>
       </ul>
       <button class="mo-theme-btn" id="themeToggle" title="Cambiar tema">
         <span class="mo-theme-icon" id="themeIcon">&#9790;</span>
@@ -1906,7 +1951,8 @@ def generar_global_html(results, now, historico):
     <ul class="mo-nav-links">
       <li><a href="global.html" class="active">Global</a></li>
       <li><a href="fijo.html">Fijo</a></li>
-      <li><a href="tv.html" class="disabled" title="Próximamente">TV</a></li>
+      <li><a href="tv.html">TV</a></li>
+      <li><a href="opits.html">OPITs</a></li>
     </ul>
   </div>
   <div style="display:flex;align-items:center;gap:12px">
@@ -2100,7 +2146,20 @@ def main():
     print(f"INFORME SLA FIJO -- {now.strftime('%Y-%m-%d %H:%M')} (Madrid)")
     REPORTES_DIR.mkdir(exist_ok=True)
 
-    client = bigquery.Client(project=PROJECT_ID)
+    import time as _time
+    client = None
+    for _intento in range(1, 4):
+        try:
+            client = bigquery.Client(project=PROJECT_ID)
+            break
+        except Exception as _e:
+            print(f"[BQ] Error al inicializar cliente (intento {_intento}/3): {_e}")
+            if _intento < 3:
+                print(f"[BQ] Reintentando en 5 min...")
+                _time.sleep(300)
+            else:
+                print("[BQ] No se pudo conectar a BigQuery tras 3 intentos. Abortando.")
+                raise
 
     # Verificar que BQ tiene los datos del día anterior antes de continuar
     if not esperar_datos_bq(client, tz):
@@ -2178,8 +2237,13 @@ def main():
 
 
 if __name__ == "__main__":
-    # --solo-samuel: modo prueba — el email solo se envía a samuel.minguez@masorange.es
+    import traceback as _traceback
     if "--solo-samuel" in sys.argv:
         MAIL_TO = "samuel.minguez@masorange.es"
         print("[TEST] Modo prueba activo — email solo a samuel.minguez@masorange.es")
-    main()
+    try:
+        main()
+    except Exception:
+        print("[ERROR FATAL] El script terminó con una excepción no controlada:")
+        _traceback.print_exc()
+        sys.exit(1)
