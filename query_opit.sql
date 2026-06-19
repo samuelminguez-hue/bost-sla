@@ -56,6 +56,8 @@ WHERE z.FECHA_CARGA = CURRENT_DATE()
   -- TV: todos los TIPOs son válidos (avería/configuración son nuestros)
   AND NOT (z.TIPO_SERVICIO = 'FIBRA' AND z.TIPO NOT IN ('AVERIA (FTTH)', 'TECNICO SOLICITADO POR CLIENTE'))
   AND z.MARCA NOT IN ('EUSKALTEL','R','RACCTEL','TELECABLE','VIRGIN TELCO')
+  -- Excluir OPITs de Operaciones CB (no son responsabilidad SAT2)
+  AND (z.OPIT_SUMMARY IS NULL OR z.OPIT_SUMMARY NOT LIKE '[OPCBI]%')
 ORDER BY
   z.TIPO_SERVICIO,
   dias_opit_abierto DESC,
