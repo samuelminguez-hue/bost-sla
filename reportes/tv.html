@@ -142,6 +142,13 @@
       color: #f0f0f0;
     }
 
+    /* Formato unificado KPI cards (igual que fijo) */
+    .kpi-label   { font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.4rem; }
+    .kpi-incumple{ font-size:2.8rem;font-weight:700;line-height:1;margin-bottom:.2rem;font-variant-numeric:tabular-nums;font-feature-settings:"tnum"; }
+    .kpi-sub     { font-size:.8rem;color:var(--text-muted);margin-bottom:.2rem; }
+    .kpi-pct     { font-size:.95rem;font-weight:700; }
+    .kpi-bar     { height:3px;background:var(--border-subtle,#e0e0e0);border-radius:2px;margin-top:8px;overflow:hidden; }
+
     /* Botones: active scale */
     .mo-theme-btn:active, .tabla-filter-btn:active, .btn-export-csv:active {
       transform: scale(0.97);
@@ -198,23 +205,19 @@
 </div>
 
 <div class="cards-grid">
-  <div class="kpi-card" style="border-top:4px solid #FF5900">
-    <div class="kpi-card-header">
-      <span class="kpi-card-label">SATN2-ZL</span>
-      <span class="kpi-card-sla">SLA 24h</span>
-    </div>
-    <div class="kpi-card-pct" style="color:#FF5900">62.8%</div>
-    <div class="kpi-bar-bg"><div class="kpi-bar-fill" style="background:#FF5900;width:62.8%"></div></div>
-    <div class="kpi-card-detail">94 incumplen &middot; 253 computables &middot; 38 excluidos FSM</div>
+  <div class="kpi-card" style="--i:0;border-top:4px solid #FF5900">
+    <div class="kpi-label">SATN2-ZL · SLA 24h</div>
+    <div class="kpi-incumple" style="color:#FF5900">94</div>
+    <div class="kpi-sub">de 253 computables &middot; 38 excluidos FSM</div>
+    <div class="kpi-pct" style="color:#FF5900">62.8% cumplimiento</div>
+    <div class="kpi-bar"><div class="kpi-bar-fill" style="width:62.8%;background:#FF5900"></div></div>
   </div>
-  <div class="kpi-card" style="border-top:4px solid #FF5900">
-    <div class="kpi-card-header">
-      <span class="kpi-card-label">Log&iacute;stica TV</span>
-      <span class="kpi-card-sla">SLA 24h</span>
-    </div>
-    <div class="kpi-card-pct" style="color:#FF5900">70.4%</div>
-    <div class="kpi-bar-bg"><div class="kpi-bar-fill" style="background:#FF5900;width:70.4%"></div></div>
-    <div class="kpi-card-detail">37 incumplen &middot; 125 computables &middot; 108 excluidos</div>
+  <div class="kpi-card" style="--i:1;border-top:4px solid #FF5900">
+    <div class="kpi-label">Log&iacute;stica TV · SLA 24h</div>
+    <div class="kpi-incumple" style="color:#FF5900">37</div>
+    <div class="kpi-sub">de 125 computables &middot; 108 excluidos</div>
+    <div class="kpi-pct" style="color:#FF5900">70.4% cumplimiento</div>
+    <div class="kpi-bar"><div class="kpi-bar-fill" style="width:70.4%;background:#FF5900"></div></div>
   </div>
 </div>
 
