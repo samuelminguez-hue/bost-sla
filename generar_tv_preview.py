@@ -149,7 +149,7 @@ def build_opit_rows(rows):
     for r in rows:
         clave  = esc(r.get("CLAVE"))
         marca  = esc(r.get("MARCA"))
-        opit   = esc(r.get("ISSUE_OPIT"))
+        opit   = esc(r.get("opit_clave") or r.get("ISSUE_OPIT"))
         status = esc(r.get("OPIT_STATUS"))
         prio   = esc(r.get("PRIO_OPIT"))
         dias   = r.get("dias_opit_abierto", "—")
