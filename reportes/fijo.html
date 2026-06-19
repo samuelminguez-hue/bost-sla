@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Informe SLA Fijo &mdash; 18/06/2026 &mdash; MasOrange</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     /* ── TOKENS MARCA ───────────────────────────────────────────── */
     :root {
@@ -24,7 +27,7 @@
       --text-muted:      #999999;
       --border-main:     #000000;
       --border-subtle:   #E0E0E0;
-      --nav-bg:          #FFFFFF;
+      --nav-bg:          rgba(255,255,255,0.88);
       --mo-circle-color: #000000;   /* O del logo: negro en claro */
     }
 
@@ -38,7 +41,7 @@
         --text-muted:      #888888;
         --border-main:     #FFFFFF;
         --border-subtle:   #2a2a2a;
-        --nav-bg:          #0d0d0d;
+        --nav-bg:          rgba(13,13,13,0.88);
         --mo-circle-color: #FFFFFF; /* O del logo: blanco en oscuro */
       }
     }
@@ -52,7 +55,7 @@
       --text-muted:      #888888;
       --border-main:     #FFFFFF;
       --border-subtle:   #2a2a2a;
-      --nav-bg:          #0d0d0d;
+      --nav-bg:          rgba(13,13,13,0.88);
       --mo-circle-color: #FFFFFF;
     }
     [data-theme="light"] {
@@ -68,7 +71,7 @@
     }
 
     /* ── RESET ──────────────────────────────────────────────────── */
-    * { font-family: Arial, Helvetica, sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
+    * { font-family: 'Outfit', Arial, sans-serif; box-sizing: border-box; margin: 0; padding: 0; }
     body { background: var(--bg-page); color: var(--text-main); font-size: 1rem; line-height: 1.5; transition: background .2s, color .2s; }
     a { color: var(--mo-orange); text-decoration: none; }
     a:hover { text-decoration: underline; }
@@ -80,6 +83,7 @@
       height: 56px;
       background: var(--nav-bg); border-bottom: 1px solid var(--border-subtle);
       position: sticky; top: 0; z-index: 100;
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     }
     .mo-nav-left { display: flex; align-items: center; gap: 1.5rem; height: 100%; }
     .mo-nav-brand {
@@ -207,14 +211,14 @@
       padding: 8px 0 10px;
     }
     .tabla-toolbar input {
-      font-family: Arial,Helvetica,sans-serif; font-size: 0.8rem;
+      font-family: 'Outfit', Arial, sans-serif; font-size: 0.8rem;
       padding: 4px 10px; border: 1.5px solid var(--border-subtle);
       border-radius: 4px; background: var(--bg-card); color: var(--text-main);
       width: 200px;
     }
     .tabla-toolbar input:focus { outline: none; border-color: var(--mo-orange); }
     .tabla-filter-btn {
-      font-family: Arial,Helvetica,sans-serif; font-size: 0.75rem; font-weight: 700;
+      font-family: 'Outfit', Arial, sans-serif; font-size: 0.75rem; font-weight: 700;
       padding: 4px 12px; border-radius: 4px; cursor: pointer;
       border: 1.5px solid var(--border-subtle);
       background: var(--bg-card); color: var(--text-muted);
@@ -223,7 +227,7 @@
     .tabla-filter-btn:hover { border-color: var(--mo-orange); color: var(--mo-orange); }
     .tabla-filter-btn.active { background: var(--mo-orange); border-color: var(--mo-orange); color: #fff; }
     .btn-export-csv {
-      font-family: Arial,Helvetica,sans-serif; font-size: 0.75rem; font-weight: 700;
+      font-family: 'Outfit', Arial, sans-serif; font-size: 0.75rem; font-weight: 700;
       padding: 4px 14px; border-radius: 4px; cursor: pointer;
       border: 1.5px solid #2E7D32; background: var(--bg-card); color: #2E7D32;
       margin-left: auto; transition: background .15s, color .15s;
@@ -251,6 +255,67 @@
     /* ── RESPONSIVE ─────────────────────────────────────────────── */
     @media (max-width: 900px) { .kpi-grid { grid-template-columns: repeat(2,1fr); } }
     @media (max-width: 540px) { .kpi-grid { grid-template-columns: 1fr; } }
+
+    /* ══ REDESIGN IMPROVEMENTS ════════════════════════════════════ */
+    html { scroll-behavior: smooth; }
+
+    /* h1 hero: tracking negativo */
+    .mo-hero h1 { letter-spacing: -0.02em; }
+
+    /* Tabular nums en numeros KPI */
+    .kpi-incumple, .kpi-global-num {
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum";
+    }
+
+    /* KPI cards: hover lift + fadeUp staggered */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: none; }
+    }
+    .kpi-card {
+      transition: transform 200ms cubic-bezier(0.4,0,0.2,1), box-shadow 200ms cubic-bezier(0.4,0,0.2,1);
+      animation: fadeUp 0.35s ease forwards;
+      animation-delay: calc(var(--i, 0) * 70ms);
+      opacity: 0;
+    }
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255,89,0,0.12);
+    }
+
+    /* KPI bar */
+    .kpi-bar { height: 3px; background: var(--border-subtle); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+    .kpi-bar-fill { height: 100%; border-radius: 2px; transition: width 0.8s ease 0.3s; }
+
+    /* Tabla rows hover mejorado */
+    .mo-table tbody tr { transition: transform 150ms ease; }
+    .mo-table tbody tr:hover td { background: rgba(255,89,0,0.06) !important; }
+    .mo-table tbody tr:hover { transform: translateX(3px); }
+    .mo-table tbody tr:hover td:first-child { border-left: 3px solid #FF5900; padding-left: calc(1rem - 3px); }
+
+    /* Thead menos agresivo */
+    .mo-table th {
+      background: var(--bg-strip);
+      color: var(--text-main);
+      border-bottom: 2px solid var(--mo-orange);
+      font-weight: 600;
+      text-align: left;
+      padding: 0.7rem 1rem;
+    }
+
+    /* Botones: transicion y active scale */
+    .mo-theme-btn, .tabla-filter-btn, .btn-export-csv { transition: all 150ms ease; }
+    .mo-theme-btn:active, .tabla-filter-btn:active, .btn-export-csv:active { transform: scale(0.97); }
+
+    /* Focus visible */
+    .tabla-toolbar input:focus-visible,
+    .mo-theme-btn:focus-visible,
+    .tabla-filter-btn:focus-visible,
+    .btn-export-csv:focus-visible {
+      outline: 2px solid var(--mo-orange);
+      outline-offset: 2px;
+    }
   </style>
 </head>
 <body>
@@ -294,8 +359,8 @@
 
   <!-- KPI CARDS -->
   <div class="kpi-grid">
-    <div class="kpi-card" style="border-top:4px solid #2E7D32"><div class="kpi-label">STFIJO · SLA 24h</div><div class="kpi-incumple" style="color:#2E7D32">157</div><div class="kpi-sub">de 1098 tickets</div><div class="kpi-pct" style="color:#2E7D32">85.7% cumplimiento</div></div>
-<div class="kpi-card" style="border-top:4px solid #C62828"><div class="kpi-label">Logística · SLA 24h</div><div class="kpi-incumple" style="color:#C62828">186</div><div class="kpi-sub">de 409 (296 comput.) tickets</div><div class="kpi-pct" style="color:#C62828">37.2% cumplimiento</div></div>
+    <div class="kpi-card" style="--i:0;border-top:4px solid #2E7D32"><div class="kpi-label">STFIJO · SLA 24h</div><div class="kpi-incumple" style="color:#2E7D32">157</div><div class="kpi-sub">de 1098 tickets</div><div class="kpi-pct" style="color:#2E7D32">85.7% cumplimiento</div><div class="kpi-bar"><div class="kpi-bar-fill" style="width:85.7%;background:#2E7D32"></div></div></div>
+<div class="kpi-card" style="--i:1;border-top:4px solid #C62828"><div class="kpi-label">Logística · SLA 24h</div><div class="kpi-incumple" style="color:#C62828">186</div><div class="kpi-sub">de 409 (296 comput.) tickets</div><div class="kpi-pct" style="color:#C62828">37.2% cumplimiento</div><div class="kpi-bar"><div class="kpi-bar-fill" style="width:37.2%;background:#C62828"></div></div></div>
 
   </div>
 

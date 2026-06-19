@@ -4,6 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Informe SLA TV &mdash; 18/06/2026 &mdash; MasOrange</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --mo-orange:#FF5900; --mo-black:#000; --mo-white:#fff;
@@ -15,8 +18,8 @@
       --mo-white:#111; --mo-gray-light:#1a1a1a; --text-main:#f0f0f0;
       --text-muted:#aaa; --mo-border:#333; --bg-strip:#1c1c1c;
     }
-    * { box-sizing:border-box; margin:0; padding:0; }
-    body { font-family:Arial,Helvetica,sans-serif; background:var(--mo-gray-light); color:var(--text-main); }
+    * { font-family:'Outfit',Arial,Helvetica,sans-serif; box-sizing:border-box; margin:0; padding:0; }
+    body { background:var(--mo-gray-light); color:var(--text-main); }
     .mo-nav { position:sticky;top:0;z-index:100;background:#000;height:var(--nav-h);
                display:flex;align-items:center;justify-content:space-between;padding:0 24px;gap:16px; }
     .mo-nav-brand { color:#fff;font-weight:700;font-size:.9rem; }
@@ -58,9 +61,9 @@
     .mo-badge { padding:3px 10px;border-radius:12px;font-size:.75rem;font-weight:700;color:#fff; }
     .mo-badge-gray { background:#e0e0e0;color:#333; }
     .tabla-toolbar { display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px; }
-    .tabla-filter-input { border:1px solid var(--mo-border);border-radius:4px;padding:5px 10px;
+    .tabla-filter-input { font-family:'Outfit',Arial,Helvetica,sans-serif; border:1px solid var(--mo-border);border-radius:4px;padding:5px 10px;
                            font-size:.8rem;background:var(--mo-white);color:var(--text-main);width:200px; }
-    .tabla-filter-btn { border:1px solid var(--mo-border);background:var(--mo-white);
+    .tabla-filter-btn { font-family:'Outfit',Arial,Helvetica,sans-serif; border:1px solid var(--mo-border);background:var(--mo-white);
                          color:var(--text-main);border-radius:4px;padding:5px 12px;font-size:.8rem;cursor:pointer; }
     .tabla-filter-btn.active { background:var(--mo-orange);color:#fff;border-color:var(--mo-orange); }
     .tabla-count { font-size:.78rem;color:var(--text-muted);margin-left:4px; }
@@ -86,6 +89,72 @@
     .mo-footer-links { display:flex;gap:16px; }
     .mo-footer-links a { color:#aaa;text-decoration:none; }
     .mo-footer-links a:hover { color:#fff; }
+
+    /* ══ REDESIGN IMPROVEMENTS ════════════════════════════════════ */
+    html { scroll-behavior: smooth; }
+
+    /* h1/title hero: tracking negativo */
+    .hero-title { letter-spacing: -0.02em; }
+
+    /* Tabular nums en números KPI */
+    .kpi-card-pct, .kpi-global-number {
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum";
+    }
+
+    /* Nav glassmorphism */
+    .mo-nav { background: rgba(0,0,0,0.88); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+    @media (prefers-color-scheme: dark) {
+      .mo-nav { background: rgba(13,13,13,0.88); }
+    }
+    [data-theme="dark"] .mo-nav { background: rgba(13,13,13,0.88); }
+
+    /* KPI cards: hover lift + fadeUp staggered */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: none; }
+    }
+    .kpi-card {
+      transition: transform 200ms cubic-bezier(0.4,0,0.2,1), box-shadow 200ms;
+      animation: fadeUp 0.35s ease forwards;
+      animation-delay: calc(var(--i, 0) * 70ms);
+      opacity: 0;
+    }
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255,89,0,0.12);
+    }
+
+    /* Tabla rows hover mejorado */
+    .mo-table tbody tr { transition: transform 150ms ease, background 150ms; }
+    .mo-table tbody tr:hover td { background: rgba(255,89,0,0.06) !important; }
+    .mo-table tbody tr:hover { transform: translateX(3px); }
+    .mo-table tbody tr:hover td:first-child { border-left: 3px solid #FF5900; }
+
+    /* Thead menos agresivo */
+    .mo-table th {
+      background: #f2f2f2;
+      color: #111;
+      border-bottom: 2px solid #FF5900;
+    }
+    [data-theme="dark"] .mo-table th {
+      background: #1c1c1c;
+      color: #f0f0f0;
+    }
+
+    /* Botones: active scale */
+    .mo-theme-btn:active, .tabla-filter-btn:active, .btn-export-csv:active {
+      transform: scale(0.97);
+    }
+
+    /* Focus visible */
+    .tabla-filter-input:focus-visible,
+    .mo-theme-btn:focus-visible,
+    .tabla-filter-btn:focus-visible,
+    .btn-export-csv:focus-visible {
+      outline: 2px solid #FF5900;
+      outline-offset: 2px;
+    }
   </style>
 </head>
 <body>
