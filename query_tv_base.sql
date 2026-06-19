@@ -31,6 +31,7 @@ WITH tickets_scope AS (
     FECHA_CREACION,
     FECHA_ULTIMA_ACTUALIZACION,
     FECHA_REVISION_N2,
+    FECHA_INICIO_ILOCALIZABLE,
     FECHA_ULTIMA_ENTRADA_SAT2,
     FECHA_ULTIMA_DEVUELTA_FSM,
     FECHA_ULTIMA_DEVUELTA_FRANQUEADA,
@@ -95,23 +96,56 @@ calcular_inicio_reloj AS (
   FROM detectar_responsabilidad
 ),
 
-calcular_horas_laborables AS (
-  -- 08:00-00:00, 7 días/semana, zona Europe/Madrid (misma fórmula que Fijo)
+-- Si el agente gestionó el ticket (revisión N2 o marcó ilocalizable) DESPUÉS del inicio
+-- del reloj, el reloj avanza a ese evento. Mismo criterio que query_base_p2.sql (Fijo).
+ajustar_por_gestion AS (
   SELECT
     *,
     CASE
-      WHEN NOT sat2_responsable OR inicio_reloj IS NULL THEN NULL
+      WHEN NOT sat2_responsable OR inicio_reloj IS NULL
+        THEN inicio_reloj
+      -- Tomar la gestión más reciente que sea posterior al inicio del reloj
+      WHEN FECHA_REVISION_N2 IS NOT NULL AND FECHA_INICIO_ILOCALIZABLE IS NOT NULL
+        AND FECHA_REVISION_N2 > inicio_reloj AND FECHA_INICIO_ILOCALIZABLE > inicio_reloj
+        THEN GREATEST(FECHA_REVISION_N2, FECHA_INICIO_ILOCALIZABLE)
+      WHEN FECHA_REVISION_N2 IS NOT NULL AND FECHA_REVISION_N2 > inicio_reloj
+        THEN FECHA_REVISION_N2
+      WHEN FECHA_INICIO_ILOCALIZABLE IS NOT NULL AND FECHA_INICIO_ILOCALIZABLE > inicio_reloj
+        THEN FECHA_INICIO_ILOCALIZABLE
+      ELSE inicio_reloj
+    END AS inicio_medicion,
+    CASE
+      WHEN NOT sat2_responsable OR inicio_reloj IS NULL THEN 'NO_APLICA'
+      WHEN FECHA_REVISION_N2 IS NOT NULL AND FECHA_INICIO_ILOCALIZABLE IS NOT NULL
+        AND FECHA_REVISION_N2 > inicio_reloj AND FECHA_INICIO_ILOCALIZABLE > inicio_reloj
+        THEN 'GESTION_N2+ILOCALIZABLE'
+      WHEN FECHA_REVISION_N2 IS NOT NULL AND FECHA_REVISION_N2 > inicio_reloj
+        THEN 'GESTION_N2'
+      WHEN FECHA_INICIO_ILOCALIZABLE IS NOT NULL AND FECHA_INICIO_ILOCALIZABLE > inicio_reloj
+        THEN 'ILOCALIZABLE'
+      ELSE 'SIN_GESTION'
+    END AS origen_gestion
+  FROM calcular_inicio_reloj
+),
+
+calcular_horas_laborables AS (
+  -- 08:00-00:00, 7 días/semana, zona Europe/Madrid (misma fórmula que Fijo)
+  -- Mide desde inicio_medicion (última gestión o inicio de responsabilidad)
+  SELECT
+    *,
+    CASE
+      WHEN NOT sat2_responsable OR inicio_medicion IS NULL THEN NULL
       ELSE ROUND(
         (
           (UNIX_DATE(DATE(CURRENT_TIMESTAMP(), 'Europe/Madrid'))
-           - UNIX_DATE(DATE(inicio_reloj, 'Europe/Madrid'))) * 16 * 3600
+           - UNIX_DATE(DATE(inicio_medicion, 'Europe/Madrid'))) * 16 * 3600
           + GREATEST(0, TIME_DIFF(TIME(CURRENT_TIMESTAMP(), 'Europe/Madrid'), TIME '08:00:00', SECOND))
-          - GREATEST(0, TIME_DIFF(TIME(inicio_reloj, 'Europe/Madrid'), TIME '08:00:00', SECOND))
+          - GREATEST(0, TIME_DIFF(TIME(inicio_medicion, 'Europe/Madrid'), TIME '08:00:00', SECOND))
         ) / 3600.0,
         1
       )
     END AS horas_laborables
-  FROM calcular_inicio_reloj
+  FROM ajustar_por_gestion
 ),
 
 detectar_incumplimiento AS (
@@ -149,7 +183,12 @@ SELECT
     ELSE                             '✅ Dentro de SLA (24h)'
   END AS estado_display,
   FECHA_CREACION,
-  FECHA_REVISION_N2        AS fecha_ultima_gestion
+  -- fecha_ultima_gestion: revisión N2 formal o marcado ilocalizable, lo que sea más reciente
+  CASE
+    WHEN origen_gestion = 'SIN_GESTION' OR origen_gestion = 'NO_APLICA' THEN NULL
+    ELSE DATE(inicio_medicion)
+  END AS fecha_ultima_gestion,
+  origen_gestion
 FROM detectar_incumplimiento
 ORDER BY
   sat2_responsable DESC,
