@@ -71,7 +71,8 @@ def build_tv_rows(rows, modo):
         critico = ' class="row-critico"' if isinstance(horas, (int, float)) and horas > 96 else ""
         if modo == "base":
             subcateg    = esc(r.get("MOTIVO_SOLICITUD"))
-            ult_gestion = fmt_date(r.get("fecha_ultima_gestion"))
+            # fallback a fecha_inicio_reloj si no hay gestión registrada
+            ult_gestion = fmt_date(r.get("fecha_ultima_gestion") or r.get("fecha_inicio_reloj"))
         else:
             subcateg    = esc(r.get("estado_logistica"))
             ult_gestion = fmt_date(r.get("fecha_inicio_reloj"))
@@ -376,6 +377,21 @@ TV_HTML_TEMPLATE = """\
     .mo-footer-links {{ display:flex;gap:16px; }}
     .mo-footer-links a {{ color:#aaa;text-decoration:none; }}
     .mo-footer-links a:hover {{ color:#fff; }}
+    /* ══ REDESIGN VISUAL ══════════════════════════════════════════ */
+    html {{ scroll-behavior:smooth; }}
+    @keyframes fadeUp {{
+      from {{ opacity:0; transform:translateY(12px); }}
+      to   {{ opacity:1; transform:translateY(0); }}
+    }}
+    .kpi-card {{
+      transition:transform 200ms cubic-bezier(0.4,0,0.2,1), box-shadow 200ms;
+      animation:fadeUp 0.35s ease forwards;
+      animation-delay:calc(var(--i,0) * 70ms); opacity:0;
+    }}
+    .kpi-card:hover {{ transform:translateY(-2px); box-shadow:0 8px 24px rgba(255,89,0,0.12); }}
+    .mo-table tbody tr {{ transition:transform 150ms ease; }}
+    .mo-table tbody tr:hover td {{ background:rgba(255,89,0,0.06) !important; }}
+    .mo-table tbody tr:hover {{ transform:translateX(3px); }}
   </style>
 </head>
 <body>
@@ -657,6 +673,15 @@ OPITS_HTML_TEMPLATE = """\
                   justify-content:space-between;align-items:center;flex-wrap:wrap;
                   gap:12px;margin-top:32px;font-size:.8rem; }}
     .mo-footer a {{ color:#aaa;text-decoration:none; }}
+    /* ══ REDESIGN VISUAL ══════════════════════════════════════════ */
+    html {{ scroll-behavior:smooth; }}
+    @keyframes fadeUp {{
+      from {{ opacity:0; transform:translateY(12px); }}
+      to   {{ opacity:1; transform:translateY(0); }}
+    }}
+    .mo-table tbody tr {{ transition:transform 150ms ease; }}
+    .mo-table tbody tr:hover td {{ background:rgba(255,89,0,0.06) !important; }}
+    .mo-table tbody tr:hover {{ transform:translateX(3px); }}
   </style>
 </head>
 <body>

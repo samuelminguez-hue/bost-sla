@@ -66,6 +66,15 @@
                   justify-content:space-between;align-items:center;flex-wrap:wrap;
                   gap:12px;margin-top:32px;font-size:.8rem; }
     .mo-footer a { color:#aaa;text-decoration:none; }
+    /* ══ REDESIGN VISUAL ══════════════════════════════════════════ */
+    html { scroll-behavior:smooth; }
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(12px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .mo-table tbody tr { transition:transform 150ms ease; }
+    .mo-table tbody tr:hover td { background:rgba(255,89,0,0.06) !important; }
+    .mo-table tbody tr:hover { transform:translateX(3px); }
   </style>
 </head>
 <body>
@@ -94,7 +103,7 @@
 
 <section class="hero">
   <div class="hero-title">OPITs Activos</div>
-  <div class="hero-sub">Solo OPITs abiertos &middot; Viernes, 19/06/2026 &middot; Generado 12:05h</div>
+  <div class="hero-sub">Solo OPITs abiertos &middot; Viernes, 19/06/2026 &middot; Generado 12:18h</div>
 </section>
 
 <div class="summary-block">
@@ -430,7 +439,7 @@
 </div>
 
 <footer class="mo-footer">
-  <span>Generado autom&aacute;ticamente &middot; BOST MasOrange &middot; 19/06/2026 12:05h</span>
+  <span>Generado autom&aacute;ticamente &middot; BOST MasOrange &middot; 19/06/2026 12:18h</span>
   <div style="display:flex;gap:16px">
     <a href="global.html">Global</a>
     <a href="fijo.html">Fijo</a>
