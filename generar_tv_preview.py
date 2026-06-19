@@ -329,13 +329,12 @@ TV_HTML_TEMPLATE = """\
                    gap:14px;padding:14px 20px; }}
     .kpi-card {{ background:var(--mo-white);border-radius:8px;padding:16px 18px;
                  box-shadow:0 1px 4px rgba(0,0,0,.06); }}
-    .kpi-card-header {{ display:flex;justify-content:space-between;align-items:center;margin-bottom:8px; }}
-    .kpi-card-label {{ font-weight:700;font-size:.85rem; }}
-    .kpi-card-sla {{ font-size:.72rem;color:var(--text-muted); }}
-    .kpi-card-pct {{ font-size:1.9rem;font-weight:700;line-height:1;margin-bottom:10px; }}
-    .kpi-bar-bg {{ background:#f0f0f0;border-radius:3px;height:8px;overflow:hidden;margin-bottom:8px; }}
-    .kpi-bar-fill {{ height:8px;border-radius:3px; }}
-    .kpi-card-detail {{ font-size:.75rem;color:var(--text-muted); }}
+    .kpi-label   {{ font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:.4rem; }}
+    .kpi-incumple{{ font-size:2.8rem;font-weight:700;line-height:1;margin-bottom:.2rem;font-variant-numeric:tabular-nums;font-feature-settings:"tnum"; }}
+    .kpi-sub     {{ font-size:.8rem;color:var(--text-muted);margin-bottom:.2rem; }}
+    .kpi-pct     {{ font-size:.95rem;font-weight:700; }}
+    .kpi-bar     {{ height:3px;background:var(--border-subtle,#e0e0e0);border-radius:2px;margin-top:8px;overflow:hidden; }}
+    .kpi-bar-fill{{ height:3px;border-radius:3px; }}
     .tabla-seccion {{ padding:20px 20px 0; }}
     .seccion-header {{ display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap; }}
     .seccion-header h2 {{ font-size:1.1rem;font-weight:700; }}
@@ -413,23 +412,19 @@ TV_HTML_TEMPLATE = """\
 </div>
 
 <div class="cards-grid">
-  <div class="kpi-card" style="border-top:4px solid {col_b}">
-    <div class="kpi-card-header">
-      <span class="kpi-card-label">SATN2-ZL</span>
-      <span class="kpi-card-sla">SLA 24h</span>
-    </div>
-    <div class="kpi-card-pct" style="color:{col_b}">{pct_b}%</div>
-    <div class="kpi-bar-bg"><div class="kpi-bar-fill" style="background:{col_b};width:{pct_b}%"></div></div>
-    <div class="kpi-card-detail">{inc_b} incumplen &middot; {tot_b} computables &middot; {excl_b} excluidos FSM</div>
+  <div class="kpi-card" style="--i:0;border-top:4px solid {col_b}">
+    <div class="kpi-label">SATN2-ZL &middot; SLA 24h</div>
+    <div class="kpi-incumple" style="color:{col_b}">{inc_b}</div>
+    <div class="kpi-sub">de {tot_b} computables &middot; {excl_b} excluidos FSM</div>
+    <div class="kpi-pct" style="color:{col_b}">{pct_b}% cumplimiento</div>
+    <div class="kpi-bar"><div class="kpi-bar-fill" style="width:{pct_b}%;background:{col_b}"></div></div>
   </div>
-  <div class="kpi-card" style="border-top:4px solid {col_l}">
-    <div class="kpi-card-header">
-      <span class="kpi-card-label">Log&iacute;stica TV</span>
-      <span class="kpi-card-sla">SLA 24h</span>
-    </div>
-    <div class="kpi-card-pct" style="color:{col_l}">{pct_l}%</div>
-    <div class="kpi-bar-bg"><div class="kpi-bar-fill" style="background:{col_l};width:{pct_l}%"></div></div>
-    <div class="kpi-card-detail">{inc_l} incumplen &middot; {tot_l} computables &middot; {excl_l} excluidos</div>
+  <div class="kpi-card" style="--i:1;border-top:4px solid {col_l}">
+    <div class="kpi-label">Log&iacute;stica TV &middot; SLA 24h</div>
+    <div class="kpi-incumple" style="color:{col_l}">{inc_l}</div>
+    <div class="kpi-sub">de {tot_l} computables &middot; {excl_l} excluidos</div>
+    <div class="kpi-pct" style="color:{col_l}">{pct_l}% cumplimiento</div>
+    <div class="kpi-bar"><div class="kpi-bar-fill" style="width:{pct_l}%;background:{col_l}"></div></div>
   </div>
 </div>
 
