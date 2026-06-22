@@ -18,7 +18,9 @@ WITH tickets_sgi AS (
     FECHA_ULTIMA_ACTUALIZACION,
     FECHA_REVISION_N2,
     MOTIVO_SOLICITUD,
-    TIPO_SERVICIO
+    TIPO_SERVICIO,
+    FECHA_RELLAMADA,
+    NUMERO_RELLAMADAS
   FROM `mm-operaciones-bigquery.datastudio.ZZ_averias`
   WHERE FECHA_CARGA = CURRENT_DATE()
     AND COLA_PETICIONES = 'TGJIRA-SATN2-STFIJO-SGI'
@@ -97,6 +99,8 @@ SELECT
     WHEN 'INCUMPLE'             THEN CONCAT('⛔ ', CAST(horas_laborables AS STRING), 'h lab. sin gestión (SLA 48h SGI)')
     WHEN 'EXCEPTO_AGENDAMIENTO' THEN '⏰ Agendado (excepción válida)'
     ELSE                             '✅ Dentro de SLA (48h SGI)'
-  END AS estado_display
+  END AS estado_display,
+  FECHA_RELLAMADA,
+  NUMERO_RELLAMADAS
 FROM detectar_incumplimiento
 ORDER BY horas_laborables DESC, CLAVE

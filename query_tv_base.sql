@@ -36,7 +36,9 @@ WITH tickets_scope AS (
     FECHA_ULTIMA_DEVUELTA_FSM,
     FECHA_ULTIMA_DEVUELTA_FRANQUEADA,
     FSM_STATUS,
-    ESTADO_ESCALADO_EXTERNO
+    ESTADO_ESCALADO_EXTERNO,
+    FECHA_RELLAMADA,
+    NUMERO_RELLAMADAS
   FROM `mm-operaciones-bigquery.datastudio.ZZ_averias`
   WHERE FECHA_CARGA = CURRENT_DATE()
     AND TIPO_SERVICIO = 'TV'
@@ -188,7 +190,9 @@ SELECT
     WHEN origen_gestion = 'SIN_GESTION' OR origen_gestion = 'NO_APLICA' THEN NULL
     ELSE DATE(inicio_medicion)
   END AS fecha_ultima_gestion,
-  origen_gestion
+  origen_gestion,
+  FECHA_RELLAMADA,
+  NUMERO_RELLAMADAS
 FROM detectar_incumplimiento
 ORDER BY
   sat2_responsable DESC,

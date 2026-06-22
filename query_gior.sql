@@ -27,7 +27,9 @@ WITH tickets_gior AS (
     FECHA_CREACION,
     FECHA_REVISION_N2,
     MOTIVO_SOLICITUD,
-    TIPO_SERVICIO
+    TIPO_SERVICIO,
+    FECHA_RELLAMADA,
+    NUMERO_RELLAMADAS
   FROM `mm-operaciones-bigquery.datastudio.ZZ_averias`
   WHERE FECHA_CARGA = CURRENT_DATE()
     AND COLA_PETICIONES = 'TGJIRA-ESCALADO GIOR'
@@ -104,6 +106,8 @@ SELECT
     WHEN 'INCUMPLE'             THEN CONCAT('⛔ ', CAST(horas_laborables AS STRING), 'h lab. sin crear ticket Vodafone (SLA 24h GIOR)')
     WHEN 'EXCEPTO_AGENDAMIENTO' THEN '⏰ Agendado (excepción válida)'
     ELSE                             '✅ Dentro de SLA (24h GIOR)'
-  END AS estado_display
+  END AS estado_display,
+  FECHA_RELLAMADA,
+  NUMERO_RELLAMADAS
 FROM detectar_incumplimiento
 ORDER BY horas_laborables DESC, CLAVE

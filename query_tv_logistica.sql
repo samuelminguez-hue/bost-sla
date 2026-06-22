@@ -42,7 +42,9 @@ WITH tickets_logistica AS (
     FECHA_ULTIMA_ACTUALIZACION,
     FECHA_REVISION_N2,
     FECHA_INICIO_ILOCALIZABLE,
-    FECHA_ULTIMA_LABEL_LOGISTICA
+    FECHA_ULTIMA_LABEL_LOGISTICA,
+    FECHA_RELLAMADA,
+    NUMERO_RELLAMADAS
   FROM `mm-operaciones-bigquery.datastudio.ZZ_averias`
   WHERE FECHA_CARGA = CURRENT_DATE()
     AND COLA_PETICIONES = 'TGJIRA-LOGISTICA_ST'
@@ -177,7 +179,9 @@ SELECT
     WHEN 'EXCEPTO_AGENDAMIENTO' THEN '⏰ Agendado (excepción válida)'
     WHEN 'EXCLUIDO'             THEN CONCAT('🔄 En espera — ', estado_logistica)
     ELSE                             '✅ Dentro de SLA (24h)'
-  END AS estado_display
+  END AS estado_display,
+  FECHA_RELLAMADA,
+  NUMERO_RELLAMADAS
 FROM detectar_incumplimiento
 ORDER BY
   sat2_responsable DESC,

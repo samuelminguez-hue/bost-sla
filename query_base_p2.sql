@@ -28,7 +28,9 @@ WITH tickets_scope AS (
     FECHA_ULTIMA_LABEL_GIOR,
     FECHA_ULTIMA_ENTRADA_SAT2,
     MOTIVO_SOLICITUD,
-    TIPO_SERVICIO
+    TIPO_SERVICIO,
+    FECHA_RELLAMADA,
+    NUMERO_RELLAMADAS
   FROM `mm-operaciones-bigquery.datastudio.ZZ_averias`
   WHERE FECHA_CARGA = CURRENT_DATE()
     AND COLA_PETICIONES = 'TGJIRA-SATN2-STFIJO-ZL'
@@ -157,6 +159,8 @@ SELECT
     WHEN 'INCUMPLE'            THEN CONCAT('⛔ ', CAST(horas_laborables AS STRING), 'h lab. sin gestión')
     WHEN 'EXCEPTO_AGENDAMIENTO' THEN '⏰ Agendado (excepción válida)'
     ELSE                            '✅ Dentro de SLA'
-  END AS estado_display
+  END AS estado_display,
+  FECHA_RELLAMADA,
+  NUMERO_RELLAMADAS
 FROM detectar_incumplimiento
 ORDER BY horas_laborables DESC, CLAVE

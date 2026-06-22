@@ -137,12 +137,21 @@ def build_rows_html(rows, col_gestion, sec_key):
 
     html = ""
 
+    def fmt_rellamada(r):
+        num = r.get("NUMERO_RELLAMADAS")
+        fecha = r.get("FECHA_RELLAMADA")
+        if num is None:
+            return "—"
+        fecha_str = fecha.strftime("%d/%m") if fecha else "?"
+        return f'{int(num)} · {fecha_str}'
+
     for r in incumple_rows:
         clave    = escape_html(r.get("CLAVE"))
         categ    = escape_html(r.get("MOTIVO_SOLICITUD"))
         horas    = r.get("horas_sin_gestion")
         gestion  = escape_html(r.get(col_gestion))
         display  = escape_html(r.get("estado_display"))
+        rell     = fmt_rellamada(r)
         critico_cls = ' class="row-critico"' if horas > 96 else ''
         html += (
             f'<tr{critico_cls} data-horas="{horas}" data-categ="{categ}">'
@@ -151,13 +160,14 @@ def build_rows_html(rows, col_gestion, sec_key):
             f'<td style="font-weight:700;color:#C62828">{horas}h</td>'
             f'<td>{gestion}</td>'
             f'<td>{display}</td>'
+            f'<td style="color:#555;white-space:nowrap">{rell}</td>'
             f'</tr>\n'
         )
 
     if otros_rows:
         html += (
             f'<tr class="toggle-row" data-sec="{sec_key}">'
-            f'<td colspan="5" class="toggle-cell">'
+            f'<td colspan="6" class="toggle-cell">'
             f'▼ Ver {len(otros_rows)} tickets dentro de SLA / excluidos'
             f'</td></tr>\n'
         )
@@ -167,6 +177,7 @@ def build_rows_html(rows, col_gestion, sec_key):
             horas   = r.get("horas_sin_gestion")
             gestion = escape_html(r.get(col_gestion))
             display = escape_html(r.get("estado_display"))
+            rell    = fmt_rellamada(r)
             html += (
                 f'<tr class="otros-row-{sec_key}" data-horas="{horas}" data-categ="{categ}" style="display:none">'
                 f'<td><a href="https://tgjira.masmovil.com/browse/{clave}" target="_blank">{clave}</a></td>'
@@ -174,11 +185,12 @@ def build_rows_html(rows, col_gestion, sec_key):
                 f'<td>{horas}h</td>'
                 f'<td>{gestion}</td>'
                 f'<td>{display}</td>'
+                f'<td style="color:#555;white-space:nowrap">{rell}</td>'
                 f'</tr>\n'
             )
 
     if not incumple_rows and not otros_rows:
-        html = '<tr><td colspan="5" style="text-align:center;color:#999;padding:1.5rem">Sin tickets en esta cola hoy</td></tr>\n'
+        html = '<tr><td colspan="6" style="text-align:center;color:#999;padding:1.5rem">Sin tickets en esta cola hoy</td></tr>\n'
 
     return html
 
@@ -260,6 +272,7 @@ def generate_html(results, now):
             f'<thead><tr>'
             f'<th>Ticket</th><th>Subcategoría</th>'
             f'<th>Horas sin gestión</th><th>Última gestión</th><th>Estado</th>'
+            f'<th>Rellamadas</th>'
             f'</tr></thead>'
             f'<tbody>\n{rows_html}</tbody>'
             f'</table></div>'
