@@ -260,9 +260,10 @@
       <div style="width:1px;height:20px;background:var(--mo-border)"></div>
       <!-- Periodo -->
       <div class="chart-filters">
-        <button class="chart-filter-btn active" data-days="7">Semana</button>
-        <button class="chart-filter-btn" data-days="30">Mes</button>
-        <button class="chart-filter-btn" data-days="0">Todo</button>
+        <button class="chart-filter-btn active" data-gran="days">7 días</button>
+        <button class="chart-filter-btn" data-gran="weeks">Semanas</button>
+        <button class="chart-filter-btn" data-gran="months">Meses</button>
+        <button class="chart-filter-btn" data-gran="all">Todo</button>
       </div>
     </div>
   </div>
@@ -278,7 +279,14 @@
       <button class="cola-toggle-btn" data-cola="logistica" style="border-color:#9c27b0;color:#9c27b0">Log&iacute;stica</button>
     </div>
   </div>
-  <div class="section-subtitle">% cumplimiento diario &middot; Objetivo: 80% (l&iacute;nea amarilla)</div>
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+    <label style="font-size:.78rem;color:var(--mo-muted);font-weight:700">Rango:</label>
+    <input type="date" id="chart-from" style="padding:4px 8px;border-radius:4px;border:1.5px solid var(--mo-border);background:var(--mo-white);color:var(--mo-text);font-size:.8rem;cursor:pointer" title="Fecha inicio">
+    <span style="font-size:.78rem;color:var(--mo-muted)">—</span>
+    <input type="date" id="chart-to" style="padding:4px 8px;border-radius:4px;border:1.5px solid var(--mo-border);background:var(--mo-white);color:var(--mo-text);font-size:.8rem;cursor:pointer" title="Fecha fin">
+    <button id="chart-range-clear" style="padding:4px 10px;border-radius:4px;border:1.5px solid var(--mo-border);background:none;color:var(--mo-muted);font-size:.75rem;cursor:pointer" title="Limpiar rango">✕</button>
+  </div>
+  <div class="section-subtitle" id="chart-subtitle">% cumplimiento diario &middot; Objetivo: 80% (l&iacute;nea amarilla)</div>
   <div style="position:relative;height:240px">
     <canvas id="sla-chart"></canvas>
   </div>
@@ -334,7 +342,7 @@
 const COLA_COLORS = {fijo:'#FF5900',logistica:'#9c27b0'};
 const COLA_LABELS = {fijo:'STFIJO·SGI·GIOR',logistica:'Logística'};
 const COLA_KEYS   = ['fijo','logistica'];
-var activeDays = 7;
+var chartGranularity = 'days';
 var visibleColas = {fijo:true,logistica:true};
 var chartMode = 'colas';
 var slaChart = null;
@@ -444,13 +452,82 @@ function buildChartConfig(data){
   };
 }
 
+function filterByRange(data){
+  var from=document.getElementById('chart-from').value;
+  var to=document.getElementById('chart-to').value;
+  if(!from&&!to) return data;
+  return data.filter(function(d){
+    if(from&&d.fecha<from) return false;
+    if(to&&d.fecha>to) return false;
+    return true;
+  });
+}
+
+function aggregateWeeks(data){
+  var map={};
+  data.forEach(function(d){
+    var dt=new Date(d.fecha+'T12:00:00');
+    var dow=dt.getDay();
+    var diff=dow===0?-6:1-dow;
+    var mon=new Date(dt); mon.setDate(dt.getDate()+diff);
+    var key=mon.toISOString().slice(0,10);
+    if(!map[key]) map[key]={key:key,fijo:{s:0,n:0,inc:0},logistica:{s:0,n:0,inc:0}};
+    ['fijo','logistica'].forEach(function(c){
+      if(d[c]){map[key][c].s+=d[c].pct;map[key][c].n++;map[key][c].inc+=d[c].incumple;}
+    });
+  });
+  return Object.values(map).sort(function(a,b){return a.key<b.key?-1:1;}).map(function(w){
+    var r={fecha:'Sem '+w.key.slice(5).replace('-','/')};
+    ['fijo','logistica'].forEach(function(c){
+      r[c]=w[c].n?{pct:Math.round(w[c].s/w[c].n*10)/10,incumple:w[c].inc}:null;
+    });
+    return r;
+  });
+}
+
+function aggregateMonths(data){
+  var MESES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+  var map={};
+  data.forEach(function(d){
+    var key=d.fecha.slice(0,7);
+    if(!map[key]) map[key]={key:key,fijo:{s:0,n:0,inc:0},logistica:{s:0,n:0,inc:0}};
+    ['fijo','logistica'].forEach(function(c){
+      if(d[c]){map[key][c].s+=d[c].pct;map[key][c].n++;map[key][c].inc+=d[c].incumple;}
+    });
+  });
+  return Object.values(map).sort(function(a,b){return a.key<b.key?-1:1;}).map(function(m){
+    var p=m.key.split('-');
+    var r={fecha:MESES[parseInt(p[1])-1]+' '+p[0]};
+    ['fijo','logistica'].forEach(function(c){
+      r[c]=m[c].n?{pct:Math.round(m[c].s/m[c].n*10)/10,incumple:m[c].inc}:null;
+    });
+    return r;
+  });
+}
+
+function updateSubtitle(){
+  var sub=document.getElementById('chart-subtitle');
+  if(!sub) return;
+  var labels={days:'% cumplimiento diario · Objetivo: 80% (línea amarilla)',
+              weeks:'% cumplimiento promedio por semana · Objetivo: 80%',
+              months:'% cumplimiento promedio mensual · Objetivo: 80%',
+              all:'% cumplimiento diario (todos los datos) · Objetivo: 80%'};
+  sub.textContent=labels[chartGranularity]||labels.all;
+}
+
 function drawChart(){
-  var data = activeDays > 0 ? CHART_DATA.slice(-activeDays) : CHART_DATA;
-  var ctx = document.getElementById('sla-chart');
+  var base=filterByRange(CHART_DATA);
+  var data;
+  if(chartGranularity==='weeks') data=aggregateWeeks(base);
+  else if(chartGranularity==='months') data=aggregateMonths(base);
+  else if(chartGranularity==='days') data=base.slice(-7);
+  else data=base;
+  var ctx=document.getElementById('sla-chart');
   if(!ctx) return;
-  if(slaChart){ slaChart.destroy(); slaChart = null; }
-  if(data.length === 0) return;
-  slaChart = new Chart(ctx, buildChartConfig(data));
+  if(slaChart){slaChart.destroy();slaChart=null;}
+  if(data.length===0) return;
+  slaChart=new Chart(ctx,buildChartConfig(data));
+  updateSubtitle();
 }
 
 document.querySelectorAll('.chart-mode-btn').forEach(function(btn){
@@ -468,9 +545,19 @@ document.querySelectorAll('.chart-filter-btn').forEach(function(btn){
   btn.addEventListener('click',function(){
     document.querySelectorAll('.chart-filter-btn').forEach(function(b){b.classList.remove('active');});
     this.classList.add('active');
-    activeDays=parseInt(this.dataset.days)||0;
+    chartGranularity=this.dataset.gran;
     drawChart();
   });
+});
+
+['chart-from','chart-to'].forEach(function(id){
+  var el=document.getElementById(id);
+  if(el) el.addEventListener('change',drawChart);
+});
+document.getElementById('chart-range-clear')&&document.getElementById('chart-range-clear').addEventListener('click',function(){
+  document.getElementById('chart-from').value='';
+  document.getElementById('chart-to').value='';
+  drawChart();
 });
 
 document.querySelectorAll('.cola-toggle-btn').forEach(function(btn){

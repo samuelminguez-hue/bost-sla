@@ -75,6 +75,40 @@
     .mo-table tbody tr { transition:transform 150ms ease; }
     .mo-table tbody tr:hover td { background:rgba(255,89,0,0.06) !important; }
     .mo-table tbody tr:hover { transform:translateX(3px); }
+    /* ── BÚSQUEDA / FILTRO ────────────────────────────────────────── */
+    .opit-controls {
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      padding:14px 0 6px;
+    }
+    .opit-search {
+      flex:1; min-width:200px; max-width:380px;
+      padding:7px 12px 7px 34px; border-radius:6px;
+      border:1.5px solid var(--mo-border); background:var(--mo-white);
+      color:var(--text-main); font-size:.875rem; font-family:inherit;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:10px center;
+      transition:border-color .2s;
+    }
+    .opit-search:focus { outline:none; border-color:var(--mo-orange); }
+    .opit-select {
+      padding:7px 10px; border-radius:6px;
+      border:1.5px solid var(--mo-border); background:var(--mo-white);
+      color:var(--text-main); font-size:.8rem; font-family:inherit;
+      cursor:pointer; transition:border-color .2s;
+    }
+    .opit-select:focus { outline:none; border-color:var(--mo-orange); }
+    .opit-count {
+      font-size:.78rem; color:var(--text-muted); white-space:nowrap;
+      margin-left:auto;
+    }
+    .opit-group-hdr td {
+      background:var(--mo-border) !important;
+      font-size:.75rem; font-weight:700; color:var(--text-muted);
+      letter-spacing:.05em; text-transform:uppercase;
+      padding:.4rem 1rem !important; border-bottom:none !important;
+    }
+    [data-theme="dark"] .opit-group-hdr td { background:#2a2a2a !important; }
+    .no-results { text-align:center; color:var(--text-muted); padding:2rem; display:none; }
   </style>
 </head>
 <body>
@@ -127,6 +161,11 @@
 </div>
 
 <div id="panel-tv" class="tab-panel active">
+  <div class="opit-controls">
+    <input type="text" class="opit-search" id="search-tv" placeholder="Buscar ATC, OPIT, marca, resumen…" autocomplete="off">
+    <select class="opit-select" id="filter-opit-tv"><option value="">Todos los OPITs</option></select>
+    <span class="opit-count" id="count-tv"></span>
+  </div>
   <div class="tabla-wrap">
     <table class="mo-table">
       <thead><tr>
@@ -424,6 +463,11 @@
 </div>
 
 <div id="panel-fijo" class="tab-panel">
+  <div class="opit-controls">
+    <input type="text" class="opit-search" id="search-fijo" placeholder="Buscar ATC, OPIT, marca, resumen…" autocomplete="off">
+    <select class="opit-select" id="filter-opit-fijo"><option value="">Todos los OPITs</option></select>
+    <span class="opit-count" id="count-fijo"></span>
+  </div>
   <div class="tabla-wrap">
     <table class="mo-table">
       <thead><tr>
@@ -432,7 +476,7 @@
       </tr></thead>
       <tbody><tr><td><a href="https://tgjira.masmovil.com/browse/ATC-8531642" target="_blank">ATC-8531642</a></td><td>MASMOVIL</td><td><a href="https://jiranext.masmovil.com/browse/PROV-39480" target="_blank">PROV-39480</a></td><td>OPEN</td><td>LOW</td><td style="font-weight:700">8d</td><td style="font-size:1.1rem">🟡</td><td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="[OPN1 PROV] Error Mapeo Radius: cvlan already exist in lagAdministrative by 430037930816">[OPN1 PROV] Error Mapeo Radius: cvlan already exist in lagAdministrative by 430037930816</td></tr>
 <tr><td><a href="https://tgjira.masmovil.com/browse/ATC-8561394" target="_blank">ATC-8561394</a></td><td>MASMOVIL</td><td><a href="https://jiranext.masmovil.com/browse/PROV-39750" target="_blank">PROV-39750</a></td><td>OPEN</td><td>MEDIUM</td><td style="font-weight:700">3d</td><td style="font-size:1.1rem">🟢</td><td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="[OPN1 PROV] Error Al mapear - KO No lagAdministrative found">[OPN1 PROV] Error Al mapear - KO No lagAdministrative found</td></tr>
-<tr><td><a href="https://tgjira.masmovil.com/browse/ATC-8213670" target="_blank">ATC-8213670</a></td><td>YOIGO</td><td><a href="https://jiranext.masmovil.com/browse/MYS-33569" target="_blank">MYS-33569</a></td><td>OPEN</td><td>—</td><td style="font-weight:700">Noned</td><td style="font-size:1.1rem">—</td><td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="[BOST FIJO] NO CARGA PLANTILLA DE VOZ">[BOST FIJO] NO CARGA PLANTILLA DE VOZ</td></tr>
+<tr><td><a href="https://tgjira.masmovil.com/browse/ATC-8213670" target="_blank">ATC-8213670</a></td><td>YOIGO</td><td><a href="https://jiranext.masmovil.com/browse/MYS-33569" target="_blank">MYS-33569</a></td><td>OPEN</td><td>—</td><td style="font-weight:700">—</td><td style="font-size:1.1rem">—</td><td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="[BOST FIJO] NO CARGA PLANTILLA DE VOZ">[BOST FIJO] NO CARGA PLANTILLA DE VOZ</td></tr>
 </tbody>
     </table>
   </div>
@@ -472,6 +516,86 @@ document.querySelectorAll('.tab-btn').forEach(function(btn) {
     document.getElementById('panel-' + tab).classList.add('active');
   });
 });
+
+// ── Filtrado OPIT ────────────────────────────────────────────────
+function setupOPITFilter(panelId, searchId, selectId, countId) {
+  var panel = document.getElementById(panelId);
+  if (!panel) return;
+  var tbody = panel.querySelector('.mo-table tbody');
+  if (!tbody) return;
+  var rows = Array.from(tbody.querySelectorAll('tr'));
+
+  // Poblar select con OPITs únicos
+  var opitMap = {};
+  rows.forEach(function(tr) {
+    var cells = tr.querySelectorAll('td');
+    if (cells.length >= 3) {
+      var opit = cells[2].textContent.trim();
+      if (opit && opit !== '—') opitMap[opit] = (opitMap[opit] || 0) + 1;
+    }
+  });
+  var sel = document.getElementById(selectId);
+  if (sel) {
+    Object.keys(opitMap).sort().forEach(function(o) {
+      var opt = document.createElement('option');
+      opt.value = o; opt.textContent = o + ' (' + opitMap[o] + ')';
+      sel.appendChild(opt);
+    });
+  }
+
+  // Insertar cabeceras de grupo por OPIT
+  var lastOPIT = null;
+  rows.forEach(function(tr) {
+    var cells = tr.querySelectorAll('td');
+    if (cells.length < 3) return;
+    var opit = cells[2].textContent.trim();
+    if (opit !== lastOPIT) {
+      var hdr = document.createElement('tr');
+      hdr.className = 'opit-group-hdr';
+      hdr.dataset.group = opit;
+      hdr.innerHTML = '<td colspan="8">' + opit + ' &nbsp;·&nbsp; ' + opitMap[opit] + ' ticket' + (opitMap[opit]!==1?'s':'') + '</td>';
+      tbody.insertBefore(hdr, tr);
+      lastOPIT = opit;
+    }
+  });
+
+  function doFilter() {
+    var q = document.getElementById(searchId).value.toLowerCase().trim();
+    var opitFilter = sel ? sel.value : '';
+    var visible = 0;
+    // Re-leer filas para incluir las originales (no headers)
+    var dataRows = Array.from(tbody.querySelectorAll('tr:not(.opit-group-hdr)'));
+    dataRows.forEach(function(tr) {
+      var text = tr.textContent.toLowerCase();
+      var cells = tr.querySelectorAll('td');
+      var opit3 = cells.length >= 3 ? cells[2].textContent.trim() : '';
+      var show = (!q || text.includes(q)) && (!opitFilter || opit3 === opitFilter);
+      tr.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+    // Mostrar/ocultar cabeceras de grupo
+    Array.from(tbody.querySelectorAll('tr.opit-group-hdr')).forEach(function(hdr) {
+      var grp = hdr.dataset.group;
+      var hasVisible = Array.from(tbody.querySelectorAll('tr:not(.opit-group-hdr)')).some(function(r) {
+        var cells = r.querySelectorAll('td');
+        var opit3 = cells.length >= 3 ? cells[2].textContent.trim() : '';
+        return r.style.display !== 'none' && opit3 === grp;
+      });
+      hdr.style.display = hasVisible ? '' : 'none';
+    });
+    var countEl = document.getElementById(countId);
+    if (countEl) countEl.textContent = visible + ' de ' + dataRows.length + ' tickets';
+  }
+
+  document.getElementById(searchId).addEventListener('input', doFilter);
+  if (sel) sel.addEventListener('change', doFilter);
+  // Inicializar conteo
+  var countEl = document.getElementById(countId);
+  if (countEl) countEl.textContent = rows.length + ' tickets';
+}
+
+setupOPITFilter('panel-tv',   'search-tv',   'filter-opit-tv',   'count-tv');
+setupOPITFilter('panel-fijo', 'search-fijo', 'filter-opit-fijo', 'count-fijo');
 </script>
 </body>
 </html>

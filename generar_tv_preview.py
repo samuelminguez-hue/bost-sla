@@ -150,12 +150,13 @@ def build_opit_rows(rows):
         clave  = esc(r.get("CLAVE"))
         marca  = esc(r.get("MARCA"))
         opit   = esc(r.get("opit_clave") or r.get("ISSUE_OPIT"))
-        status = esc(r.get("OPIT_STATUS"))
+        status = esc(r.get("opit_status") or r.get("OPIT_STATUS"))
         prio   = esc(r.get("PRIO_OPIT"))
-        dias   = r.get("dias_opit_abierto", "—")
+        dias_raw = r.get("dias_opit_abierto")
+        dias_display = f"{dias_raw}d" if dias_raw is not None else "—"
         alerta = r.get("alerta_opit", "OK")
         icon   = alerta_icon(alerta)
-        resumen = esc(r.get("OPIT_SUMMARY"))
+        resumen = esc(r.get("opit_summary") or r.get("OPIT_SUMMARY"))
         fila_cls = ' class="row-critico"' if alerta == "CRITICO" else ""
         html += (
             f'<tr{fila_cls}>'
@@ -164,7 +165,7 @@ def build_opit_rows(rows):
             f'<td><a href="https://jiranext.masmovil.com/browse/{opit}" target="_blank">{opit}</a></td>'
             f'<td>{status}</td>'
             f'<td>{prio}</td>'
-            f'<td style="font-weight:700">{dias}d</td>'
+            f'<td style="font-weight:700">{dias_display}</td>'
             f'<td style="font-size:1.1rem">{icon}</td>'
             f'<td style="max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{resumen}">{resumen}</td>'
             f'</tr>\n'
@@ -682,6 +683,35 @@ OPITS_HTML_TEMPLATE = """\
     .mo-table tbody tr {{ transition:transform 150ms ease; }}
     .mo-table tbody tr:hover td {{ background:rgba(255,89,0,0.06) !important; }}
     .mo-table tbody tr:hover {{ transform:translateX(3px); }}
+    .opit-controls {{
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      padding:14px 0 6px;
+    }}
+    .opit-search {{
+      flex:1; min-width:200px; max-width:380px;
+      padding:7px 12px 7px 34px; border-radius:6px;
+      border:1.5px solid var(--mo-border); background:var(--mo-white);
+      color:var(--text-main); font-size:.875rem; font-family:inherit;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
+      background-repeat:no-repeat; background-position:10px center;
+      transition:border-color .2s;
+    }}
+    .opit-search:focus {{ outline:none; border-color:var(--mo-orange); }}
+    .opit-select {{
+      padding:7px 10px; border-radius:6px;
+      border:1.5px solid var(--mo-border); background:var(--mo-white);
+      color:var(--text-main); font-size:.8rem; font-family:inherit;
+      cursor:pointer; transition:border-color .2s;
+    }}
+    .opit-select:focus {{ outline:none; border-color:var(--mo-orange); }}
+    .opit-count {{ font-size:.78rem; color:var(--text-muted); white-space:nowrap; margin-left:auto; }}
+    .opit-group-hdr td {{
+      background:var(--mo-border) !important;
+      font-size:.75rem; font-weight:700; color:var(--text-muted);
+      letter-spacing:.05em; text-transform:uppercase;
+      padding:.4rem 1rem !important; border-bottom:none !important;
+    }}
+    [data-theme="dark"] .opit-group-hdr td {{ background:#2a2a2a !important; }}
   </style>
 </head>
 <body>
@@ -734,6 +764,11 @@ OPITS_HTML_TEMPLATE = """\
 </div>
 
 <div id="panel-tv" class="tab-panel active">
+  <div class="opit-controls">
+    <input type="text" class="opit-search" id="search-tv" placeholder="Buscar ATC, OPIT, marca, resumen…" autocomplete="off">
+    <select class="opit-select" id="filter-opit-tv"><option value="">Todos los OPITs</option></select>
+    <span class="opit-count" id="count-tv"></span>
+  </div>
   <div class="tabla-wrap">
     <table class="mo-table">
       <thead><tr>
@@ -747,6 +782,11 @@ OPITS_HTML_TEMPLATE = """\
 </div>
 
 <div id="panel-fijo" class="tab-panel">
+  <div class="opit-controls">
+    <input type="text" class="opit-search" id="search-fijo" placeholder="Buscar ATC, OPIT, marca, resumen…" autocomplete="off">
+    <select class="opit-select" id="filter-opit-fijo"><option value="">Todos los OPITs</option></select>
+    <span class="opit-count" id="count-fijo"></span>
+  </div>
   <div class="tabla-wrap">
     <table class="mo-table">
       <thead><tr>
@@ -792,6 +832,76 @@ document.querySelectorAll('.tab-btn').forEach(function(btn) {{
     document.getElementById('panel-' + tab).classList.add('active');
   }});
 }});
+
+function setupOPITFilter(panelId, searchId, selectId, countId) {{
+  var panel = document.getElementById(panelId);
+  if (!panel) return;
+  var tbody = panel.querySelector('.mo-table tbody');
+  if (!tbody) return;
+  var rows = Array.from(tbody.querySelectorAll('tr'));
+  var opitMap = {{}};
+  rows.forEach(function(tr) {{
+    var cells = tr.querySelectorAll('td');
+    if (cells.length >= 3) {{
+      var opit = cells[2].textContent.trim();
+      if (opit && opit !== '—') opitMap[opit] = (opitMap[opit] || 0) + 1;
+    }}
+  }});
+  var sel = document.getElementById(selectId);
+  if (sel) {{
+    Object.keys(opitMap).sort().forEach(function(o) {{
+      var opt = document.createElement('option');
+      opt.value = o; opt.textContent = o + ' (' + opitMap[o] + ')';
+      sel.appendChild(opt);
+    }});
+  }}
+  var lastOPIT = null;
+  rows.forEach(function(tr) {{
+    var cells = tr.querySelectorAll('td');
+    if (cells.length < 3) return;
+    var opit = cells[2].textContent.trim();
+    if (opit !== lastOPIT) {{
+      var hdr = document.createElement('tr');
+      hdr.className = 'opit-group-hdr';
+      hdr.dataset.group = opit;
+      hdr.innerHTML = '<td colspan="8">' + opit + ' &nbsp;·&nbsp; ' + (opitMap[opit]||0) + ' ticket' + ((opitMap[opit]||0)!==1?'s':'') + '</td>';
+      tbody.insertBefore(hdr, tr);
+      lastOPIT = opit;
+    }}
+  }});
+  function doFilter() {{
+    var q = document.getElementById(searchId).value.toLowerCase().trim();
+    var opitFilter = sel ? sel.value : '';
+    var visible = 0;
+    var dataRows = Array.from(tbody.querySelectorAll('tr:not(.opit-group-hdr)'));
+    dataRows.forEach(function(tr) {{
+      var text = tr.textContent.toLowerCase();
+      var cells = tr.querySelectorAll('td');
+      var opit3 = cells.length >= 3 ? cells[2].textContent.trim() : '';
+      var show = (!q || text.includes(q)) && (!opitFilter || opit3 === opitFilter);
+      tr.style.display = show ? '' : 'none';
+      if (show) visible++;
+    }});
+    Array.from(tbody.querySelectorAll('tr.opit-group-hdr')).forEach(function(hdr) {{
+      var grp = hdr.dataset.group;
+      var hasVisible = Array.from(tbody.querySelectorAll('tr:not(.opit-group-hdr)')).some(function(r) {{
+        var cells = r.querySelectorAll('td');
+        var opit3 = cells.length >= 3 ? cells[2].textContent.trim() : '';
+        return r.style.display !== 'none' && opit3 === grp;
+      }});
+      hdr.style.display = hasVisible ? '' : 'none';
+    }});
+    var countEl = document.getElementById(countId);
+    if (countEl) countEl.textContent = visible + ' de ' + dataRows.length + ' tickets';
+  }}
+  document.getElementById(searchId).addEventListener('input', doFilter);
+  if (sel) sel.addEventListener('change', doFilter);
+  var countEl = document.getElementById(countId);
+  if (countEl) countEl.textContent = rows.length + ' tickets';
+}}
+
+setupOPITFilter('panel-tv',   'search-tv',   'filter-opit-tv',   'count-tv');
+setupOPITFilter('panel-fijo', 'search-fijo', 'filter-opit-fijo', 'count-fijo');
 </script>
 </body>
 </html>
