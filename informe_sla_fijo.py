@@ -60,6 +60,20 @@ SECCIONES = [
         "file":       "query_logistica.sql",
         "col_gestion": "fecha_inicio_reloj",
     },
+    {
+        "key":        "tv_base",
+        "label":      "TV",
+        "sla":        "24h",
+        "file":       "query_tv_base.sql",
+        "col_gestion": "fecha_ultima_gestion",
+    },
+    {
+        "key":        "tv_logistica",
+        "label":      "TV Logística",
+        "sla":        "24h",
+        "file":       "query_tv_logistica.sql",
+        "col_gestion": "fecha_inicio_reloj",
+    },
 ]
 
 # Secciones de visualización: stfijo+sgi+gior unificadas
@@ -76,6 +90,20 @@ DISPLAY_SECCIONES = [
         "label":      "Logística",
         "sla":        "24h",
         "keys":       ["logistica"],
+        "col_gestion": "fecha_inicio_reloj",
+    },
+    {
+        "key":        "tv",
+        "label":      "TV",
+        "sla":        "24h",
+        "keys":       ["tv_base"],
+        "col_gestion": "fecha_ultima_gestion",
+    },
+    {
+        "key":        "tv_logistica",
+        "label":      "TV Logística",
+        "sla":        "24h",
+        "keys":       ["tv_logistica"],
         "col_gestion": "fecha_inicio_reloj",
     },
 ]
@@ -169,7 +197,7 @@ def generate_html(results, now):
         key  = sec["key"]
         rows = results[key]
 
-        if key == "logistica":
+        if "logistica" in key:
             computables = [r for r in rows if r.get("estado_sla") != "EXCLUIDO"]
             pct_base    = len(computables)
             total_label = f"{len(rows)} ({pct_base} comput.)"
@@ -199,7 +227,7 @@ def generate_html(results, now):
         key   = sec["key"]
         rows  = results[key]
 
-        if key == "logistica":
+        if "logistica" in key:
             computables = [r for r in rows if r.get("estado_sla") != "EXCLUIDO"]
             pct_base    = len(computables)
             total_label = f"{len(rows)} ({pct_base} comput.)"
@@ -243,7 +271,7 @@ def generate_html(results, now):
     total_global_incumple    = 0
     for sec in DISPLAY_SECCIONES:
         rows = results[sec["key"]]
-        if sec["key"] == "logistica":
+        if "logistica" in sec["key"]:
             computables = [r for r in rows if r.get("estado_sla") != "EXCLUIDO"]
         else:
             computables = rows
@@ -256,7 +284,7 @@ def generate_html(results, now):
     color_global = kpi_color(pct_global)
 
     kpi_global_html = (
-        f'<div class="kpi-global">'
+        f'<div class="kpi-global" style="border-left:5px solid {color_global}">'
         f'<div class="kpi-global-number" style="color:{color_global}">{total_global_incumple}</div>'
         f'<div class="kpi-global-info">'
         f'<div class="kpi-global-label">'
@@ -427,7 +455,7 @@ HTML_TEMPLATE = """\
     /* ── KPI GLOBAL ─────────────────────────────────────────────── */
     .kpi-global-wrap {{
       background: var(--bg-strip);
-      padding: 1.5rem var(--mo-margin) 0;
+      padding: 20px 20px 0;
     }}
     .kpi-global {{
       background: var(--bg-card); border-radius: 8px;
@@ -447,17 +475,17 @@ HTML_TEMPLATE = """\
     /* ── KPI GRID ───────────────────────────────────────────────── */
     .kpi-grid {{
       display: grid; grid-template-columns: repeat(4, 1fr);
-      gap: 1.25rem; padding: 1rem var(--mo-margin) 2rem;
+      gap: 14px; padding: 14px 20px 24px;
       background: var(--bg-strip);
     }}
     .kpi-card {{
       background: var(--bg-card); border-radius: 8px;
-      padding: 1.25rem 1.5rem; box-shadow: var(--mo-shadow-sm);
+      padding: 16px 18px; box-shadow: var(--mo-shadow-sm);
     }}
     .kpi-label {{
       font-size: 0.72rem; font-weight: 700;
       text-transform: uppercase; letter-spacing: 0.05em;
-      color: var(--text-muted); margin-bottom: 0.6rem;
+      color: var(--text-muted); margin-bottom: 0.4rem;
     }}
     .kpi-incumple {{ font-size: 2.8rem; font-weight: 700; line-height: 1; margin-bottom: 0.2rem; }}
     .kpi-sub     {{ font-size: 0.82rem; color: var(--text-muted); margin-bottom: 0.2rem; }}
@@ -595,8 +623,7 @@ HTML_TEMPLATE = """\
       <span class="mo-nav-brand">BOST &middot; SLA Dashboard</span>
       <ul class="mo-nav-links">
         <li><a href="global.html">Global</a></li>
-        <li><a href="#" class="active">Fijo</a></li>
-        <li><a href="tv.html">TV</a></li>
+        <li><a href="#" class="active">Fijo + TV</a></li>
         <li><a href="opits.html">OPITs</a></li>
       </ul>
       <button class="mo-theme-btn" id="themeToggle" title="Cambiar tema">
@@ -802,101 +829,158 @@ HTML_TEMPLATE = """\
 # ─────────────────────────────────────────────────────────────────
 # EMAIL VIA OUTLOOK COM
 # ─────────────────────────────────────────────────────────────────
-def build_email_body(results, now):
+def build_email_body(results, now, historico=None):
     """
-    Genera el cuerpo HTML del email para directores y proveedores:
-    - Estado global inmediato (semáforo visual)
-    - KPI por cola con barra de progreso
-    - Análisis automático de 2-3 puntos clave
-    - Pie con nota de informe adjunto
-    Preparado para TV: añadir más entradas a SECCIONES es suficiente.
+    Genera el cuerpo HTML del email.
+    - KPIs agrupados por producto: FIJO (STFIJO+Logística) y TV (TV+TV Logística)
+    - Tabla de tendencia últimos 7 días (email-safe, sin SVG)
+    - Análisis automático
     """
-    fecha_str = now.strftime("%d/%m/%Y")
-    hora_str  = now.strftime("%H:%M")
+    fecha_str  = now.strftime("%d/%m/%Y")
+    hora_str   = now.strftime("%H:%M")
     dia_semana = ["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"][now.weekday()]
 
-    # ── Calcular KPIs por cola ──────────────────────────────────────
-    kpis = []
-    total_computables = 0
-    total_incumple    = 0
+    # ── KPIs por cola y por producto ───────────────────────────────
+    PRODUCTOS = [
+        {"label": "FIJO",  "color": "#FF5900", "keys": ["fijo", "logistica"]},
+        {"label": "TV",    "color": "#1565C0", "keys": ["tv",   "tv_logistica"]},
+    ]
 
+    kpis_cola = {}
     for sec in DISPLAY_SECCIONES:
-        rows = results[sec["key"]]
-        if sec["key"] == "logistica":
+        rows = results.get(sec["key"], [])
+        if "logistica" in sec["key"]:
             computables = [r for r in rows if r.get("estado_sla") != "EXCLUIDO"]
         else:
             computables = rows
         n_comp     = len(computables)
         n_incumple = len([r for r in computables if r.get("estado_sla") == "INCUMPLE"])
         pct        = round(100 * (n_comp - n_incumple) / n_comp, 1) if n_comp > 0 else 100.0
-        color      = kpi_color(pct)
-        total_computables += n_comp
-        total_incumple    += n_incumple
-        kpis.append({
+        kpis_cola[sec["key"]] = {
             "label": sec["label"], "sla": sec["sla"],
-            "n_comp": n_comp, "n_incumple": n_incumple,
-            "pct": pct, "color": color,
-        })
+            "n_comp": n_comp, "n_incumple": n_incumple, "pct": pct,
+        }
 
+    # Subtotales por producto
+    subtotales = {}
+    for prod in PRODUCTOS:
+        comp_total = sum(kpis_cola[k]["n_comp"] for k in prod["keys"] if k in kpis_cola)
+        inc_total  = sum(kpis_cola[k]["n_incumple"] for k in prod["keys"] if k in kpis_cola)
+        pct        = round(100 * (comp_total - inc_total) / comp_total, 1) if comp_total > 0 else 100.0
+        subtotales[prod["label"]] = {"n_comp": comp_total, "n_incumple": inc_total, "pct": pct}
+
+    # KPI global
+    total_computables = sum(v["n_comp"] for v in kpis_cola.values())
+    total_incumple    = sum(v["n_incumple"] for v in kpis_cola.values())
     pct_global   = round(100 * (total_computables - total_incumple) / total_computables, 1) if total_computables > 0 else 100.0
     color_global = kpi_color(pct_global)
 
-    # ── Semáforo de estado global ───────────────────────────────────
+    # ── Semáforo ────────────────────────────────────────────────────
     if pct_global >= 80:
-        estado_label = "ESTADO: CORRECTO"
-        estado_bg    = "#1B5E20"
-        estado_emoji = "✅"
+        estado_label, estado_bg, estado_emoji = "ESTADO: CORRECTO", "#1B5E20", "✅"
     elif pct_global >= 50:
-        estado_label = "ESTADO: ATENCIÓN"
-        estado_bg    = "#E65100"
-        estado_emoji = "⚠️"
+        estado_label, estado_bg, estado_emoji = "ESTADO: ATENCIÓN", "#E65100", "⚠️"
     else:
-        estado_label = "ESTADO: CRÍTICO"
-        estado_bg    = "#B71C1C"
-        estado_emoji = "🔴"
+        estado_label, estado_bg, estado_emoji = "ESTADO: CRÍTICO", "#B71C1C", "🔴"
 
-    # ── Barras de progreso por cola ─────────────────────────────────
-    cards_html = ""
-    for k in kpis:
-        bar_pct   = max(2, k["pct"])   # mínimo visual de 2% para que se vea la barra
-        cards_html += f"""
-        <tr>
-          <td style="padding:10px 0 10px 0;border-bottom:1px solid #f0f0f0">
-            <table style="width:100%;border-collapse:collapse">
-              <tr>
-                <td style="width:110px;font-weight:700;font-size:0.875rem;color:#000;vertical-align:middle">{k['label']}</td>
-                <td style="vertical-align:middle;padding:0 12px">
-                  <!-- Barra de progreso -->
-                  <div style="background:#f0f0f0;border-radius:3px;height:10px;overflow:hidden">
-                    <div style="background:{k['color']};width:{bar_pct}%;height:10px;border-radius:3px"></div>
-                  </div>
-                </td>
-                <td style="width:52px;text-align:right;font-weight:700;font-size:1rem;color:{k['color']};vertical-align:middle">{k['pct']}%</td>
-                <td style="width:80px;text-align:right;font-size:0.78rem;color:#999;vertical-align:middle;padding-left:8px">{k['n_incumple']} / {k['n_comp']}<br><span style="font-size:0.7rem">SLA {k['sla']}</span></td>
-              </tr>
-            </table>
-          </td>
-        </tr>"""
+    # ── Bloques de producto con subcolas ────────────────────────────
+    def _fila_cola(k):
+        d = kpis_cola[k]
+        bar = max(2, d["pct"])
+        c   = kpi_color(d["pct"])
+        return (
+            f'<tr><td style="padding:6px 0 6px 12px;border-bottom:1px solid #f5f5f5">'
+            f'<table style="width:100%;border-collapse:collapse"><tr>'
+            f'<td style="width:105px;font-size:0.8rem;color:#444;vertical-align:middle">{d["label"]}</td>'
+            f'<td style="vertical-align:middle;padding:0 10px">'
+            f'<div style="background:#f0f0f0;border-radius:2px;height:7px;overflow:hidden">'
+            f'<div style="background:{c};width:{bar}%;height:7px"></div></div></td>'
+            f'<td style="width:44px;text-align:right;font-weight:700;font-size:0.85rem;color:{c}">{d["pct"]}%</td>'
+            f'<td style="width:72px;text-align:right;font-size:0.72rem;color:#aaa;padding-left:6px">'
+            f'{d["n_incumple"]}&thinsp;/&thinsp;{d["n_comp"]}</td>'
+            f'</tr></table></td></tr>'
+        )
+
+    productos_html = ""
+    for prod in PRODUCTOS:
+        sub = subtotales[prod["label"]]
+        sub_color = kpi_color(sub["pct"])
+        sub_bar   = max(2, sub["pct"])
+        # ¿tiene datos este producto?
+        tiene_datos = sub["n_comp"] > 0
+        if not tiene_datos:
+            continue
+        productos_html += (
+            f'<tr><td style="padding:10px 0 4px 0;border-top:2px solid {prod["color"]}">'
+            f'<table style="width:100%;border-collapse:collapse"><tr>'
+            f'<td style="font-weight:700;font-size:0.78rem;text-transform:uppercase;letter-spacing:.05em;color:{prod["color"]};vertical-align:middle;width:90px">{prod["label"]}</td>'
+            f'<td style="vertical-align:middle;padding:0 10px">'
+            f'<div style="background:#f0f0f0;border-radius:2px;height:10px;overflow:hidden">'
+            f'<div style="background:{sub_color};width:{sub_bar}%;height:10px"></div></div></td>'
+            f'<td style="width:52px;text-align:right;font-weight:700;font-size:1rem;color:{sub_color}">{sub["pct"]}%</td>'
+            f'<td style="width:80px;text-align:right;font-size:0.75rem;color:#999;padding-left:6px">'
+            f'{sub["n_incumple"]}&thinsp;/&thinsp;{sub["n_comp"]}<br>'
+            f'<span style="font-size:0.68rem">computables</span></td>'
+            f'</tr></table></td></tr>'
+        )
+        for k in prod["keys"]:
+            if k in kpis_cola and kpis_cola[k]["n_comp"] > 0:
+                productos_html += _fila_cola(k)
+
+    # ── Tendencia últimos 7 días (tabla HTML, sin SVG) ──────────────
+    tendencia_html = ""
+    if historico and len(historico) >= 2:
+        dias = historico[-7:]
+        col_keys = [k for k in ["fijo", "logistica", "tv", "tv_logistica"] if any(k in d for d in dias)]
+        # Cabecera
+        tendencia_html = (
+            '<table style="width:100%;border-collapse:collapse;font-size:0.72rem">'
+            '<tr>'
+            '<td style="color:#aaa;padding:3px 6px 3px 0;width:42px">Fecha</td>'
+        )
+        col_labels = {"fijo": "FIJO", "logistica": "LOG.", "tv": "TV", "tv_logistica": "TV LOG."}
+        col_colors = {"fijo": "#FF5900", "logistica": "#9c27b0", "tv": "#1565C0", "tv_logistica": "#00796B"}
+        for k in col_keys:
+            tendencia_html += f'<td style="text-align:center;color:{col_colors[k]};font-weight:700;padding:3px 4px">{col_labels[k]}</td>'
+        tendencia_html += '</tr>'
+        for d in dias:
+            fecha_lbl = str(d["fecha"])[5:].replace("-", "/")
+            tendencia_html += f'<tr><td style="color:#888;padding:2px 6px 2px 0;white-space:nowrap">{fecha_lbl}</td>'
+            for k in col_keys:
+                if k in d and d[k]:
+                    pct_v = d[k]["pct"]
+                    c = kpi_color(pct_v)
+                    tendencia_html += f'<td style="text-align:center;font-weight:700;color:{c};padding:2px 4px">{pct_v}%</td>'
+                else:
+                    tendencia_html += '<td style="text-align:center;color:#ccc;padding:2px 4px">—</td>'
+            tendencia_html += '</tr>'
+        tendencia_html += '</table>'
+
+    tendencia_block = ""
+    if tendencia_html:
+        tendencia_block = f"""
+  <!-- TENDENCIA -->
+  <div style="padding:12px 28px 16px;background:#fff;border-top:1px solid #f0f0f0">
+    <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#999;margin-bottom:8px">Tendencia (últimos 7 días)</div>
+    {tendencia_html}
+  </div>"""
 
     # ── Análisis automático ─────────────────────────────────────────
+    kpis_list = list(kpis_cola.values())
     puntos = []
-
-    # Peor cola — solo si tiene volumen suficiente (>=5 tickets) e incumplimientos reales
-    colas_significativas = [k for k in kpis if k["n_comp"] >= 5 and k["n_incumple"] > 0]
-    if colas_significativas:
-        peor = min(colas_significativas, key=lambda x: x["pct"])
+    colas_sig = [k for k in kpis_list if k["n_comp"] >= 5 and k["n_incumple"] > 0]
+    if colas_sig:
+        peor = min(colas_sig, key=lambda x: x["pct"])
         puntos.append(
             f"La cola con mayor incumplimiento es <strong>{peor['label']}</strong> "
             f"({peor['n_incumple']} de {peor['n_comp']} tickets, {peor['pct']}% cumplimiento)."
         )
     else:
-        total_inc = sum(k["n_incumple"] for k in kpis)
-        if total_inc == 0:
-            puntos.append("Todas las colas están en cumplimiento hoy. Sin incumplimientos registrados.")
+        if sum(k["n_incumple"] for k in kpis_list) == 0:
+            puntos.append("Todas las colas están en cumplimiento hoy.")
         else:
-            puntos.append("El volumen de tickets en todas las colas es bajo hoy — los datos pueden no ser representativos.")
+            puntos.append("Volumen bajo en todas las colas hoy — datos pueden no ser representativos.")
 
-    # Tickets críticos >96h en STFIJO
     stfijo_rows = results.get("stfijo", [])
     criticos = [r for r in stfijo_rows if r.get("estado_sla") == "INCUMPLE"
                 and (r.get("horas_sin_gestion") or 0) > 96]
@@ -905,48 +989,30 @@ def build_email_body(results, now):
             f'<a href="https://tgjira.masmovil.com/browse/{r.get("CLAVE","")}" style="color:#FF5900">{r.get("CLAVE","")}</a>'
             for r in criticos
         )
-        puntos.append(
-            f"<strong>{len(criticos)} tickets en STFIJO-ZL superan las 96h sin gestión</strong>: {claves_criticos}."
-        )
+        puntos.append(f"<strong>{len(criticos)} tickets STFIJO-ZL superan las 96h sin gestión</strong>: {claves_criticos}.")
     else:
-        puntos.append("No hay tickets con más de 96h sin gestión en STFIJO-ZL.")
+        puntos.append("Sin tickets crónicos (&gt;96h) en STFIJO-ZL hoy.")
 
-    # Cola con mejor cumplimiento
-    mejor = max(kpis, key=lambda x: x["pct"])
+    mejor = max(kpis_list, key=lambda x: x["pct"])
     if mejor["pct"] >= 80:
-        puntos.append(
-            f"{mejor['label']} mantiene un cumplimiento correcto ({mejor['pct']}%)."
-        )
+        puntos.append(f"{mejor['label']} mantiene un cumplimiento correcto ({mejor['pct']}%).")
     else:
-        puntos.append(
-            f"Ninguna cola supera el 80% de cumplimiento hoy. Se recomienda revisión del equipo."
-        )
+        puntos.append("Ninguna cola supera el 80% de cumplimiento hoy.")
 
     analisis_html = "".join(
         f'<li style="margin-bottom:8px;color:#333;font-size:0.875rem;line-height:1.5">{p}</li>'
         for p in puntos
     )
 
-    # ── Resumen IA (P6 — BST-13132) ────────────────────────────────
-    resumen_ia_texto = generar_resumen_ia(kpis, pct_global, results, now)
+    # ── Resumen IA ──────────────────────────────────────────────────
+    resumen_ia_texto = generar_resumen_ia(kpis_list, pct_global, results, now)
+    resumen_ia_html = ""
     if resumen_ia_texto:
         resumen_ia_html = f"""
-  <!-- RESUMEN IA (P6) -->
   <div style="padding:16px 28px 16px;background:#fff;border-top:1px solid #f0f0f0">
     <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#FF5900;margin-bottom:8px">Análisis IA</div>
     <p style="margin:0;font-size:0.875rem;color:#333;line-height:1.6">{resumen_ia_texto}</p>
   </div>"""
-    else:
-        resumen_ia_html = ""
-
-    # ── Nota evolución (placeholder hasta BST-13142) ───────────────
-    evolucion_html = (
-        '<div style="background:#fffbe6;border-left:3px solid #FFD600;padding:10px 14px;'
-        'margin-top:0;font-size:0.78rem;color:#666;border-radius:0 3px 3px 0">'
-        '📈 <strong>Evolución histórica</strong>: disponible próximamente — '
-        'en desarrollo el registro diario de KPIs para mostrar tendencia semanal/mensual.'
-        '</div>'
-    )
 
     return f"""\
 <!DOCTYPE html>
@@ -955,15 +1021,14 @@ def build_email_body(results, now):
 <body style="font-family:Arial,Helvetica,sans-serif;background:#f2f2f2;margin:0;padding:20px 0">
 <div style="max-width:580px;margin:0 auto;background:#fff;border-radius:4px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.12)">
 
-  <!-- CABECERA negra -->
+  <!-- CABECERA -->
   <div style="background:#000;padding:22px 28px 18px;display:table;width:100%;box-sizing:border-box">
     <div style="display:table-cell;vertical-align:middle">
-      <div style="font-size:1.25rem;font-weight:700;color:#fff;margin-bottom:2px">Informe SLA Fijo</div>
+      <div style="font-size:1.25rem;font-weight:700;color:#fff;margin-bottom:2px">Informe SLA Fijo + TV</div>
       <div style="font-size:0.8rem;color:#aaa">{dia_semana}, {fecha_str} &middot; Datos a las 08:30h</div>
     </div>
-    <!-- Logo +O -->
     <div style="display:table-cell;vertical-align:middle;text-align:right;width:64px">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 68" width="56" height="auto" aria-label="MasOrange">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 68" width="56" height="auto">
         <rect x="4"  y="24" width="16" height="16" fill="#FF5900"/>
         <rect x="20" y="8"  width="16" height="16" fill="#FF5900"/>
         <rect x="20" y="24" width="16" height="16" fill="#FF5900"/>
@@ -974,65 +1039,54 @@ def build_email_body(results, now):
     </div>
   </div>
 
-  <!-- SEMÁFORO DE ESTADO -->
+  <!-- SEMÁFORO -->
   <div style="background:{estado_bg};padding:14px 28px;text-align:center">
     <span style="font-size:1rem;font-weight:700;color:#fff;letter-spacing:.04em">{estado_emoji} {estado_label}</span>
   </div>
 
   <!-- KPI GLOBAL -->
   <div style="padding:20px 28px 16px;border-bottom:1px solid #f0f0f0;background:#fff">
-    <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#999;margin-bottom:8px">Cumplimiento global &mdash; todas las colas</div>
+    <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#999;margin-bottom:8px">Cumplimiento global &mdash; Fijo + TV</div>
+    <table style="width:100%;border-collapse:collapse"><tr>
+      <td style="vertical-align:middle">
+        <span style="font-size:3rem;font-weight:700;color:{color_global};line-height:1">{pct_global}%</span>
+        <div style="font-size:0.82rem;color:#666;margin-top:4px">{total_incumple} INCUMPLE &nbsp;·&nbsp; {total_computables} computables</div>
+      </td>
+      <td style="vertical-align:middle;text-align:right;padding-left:16px">
+        <div style="background:#f0f0f0;border-radius:4px;height:14px;width:160px;overflow:hidden;margin-left:auto">
+          <div style="background:{color_global};width:{max(2, pct_global)}%;height:14px;border-radius:4px"></div>
+        </div>
+        <div style="font-size:0.7rem;color:#999;margin-top:4px;text-align:right">{total_computables - total_incumple} dentro de SLA</div>
+      </td>
+    </tr></table>
+  </div>
+
+  <!-- PRODUCTOS FIJO / TV -->
+  <div style="padding:16px 28px 8px;background:#fff">
+    <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#999;margin-bottom:6px">Detalle por producto</div>
     <table style="width:100%;border-collapse:collapse">
-      <tr>
-        <td style="vertical-align:middle">
-          <span style="font-size:3rem;font-weight:700;color:{color_global};line-height:1">{pct_global}%</span>
-          <div style="font-size:0.82rem;color:#666;margin-top:4px">{total_incumple} INCUMPLE &nbsp;·&nbsp; {total_computables} computables</div>
-        </td>
-        <td style="vertical-align:middle;text-align:right;padding-left:16px">
-          <!-- Mini barra global -->
-          <div style="background:#f0f0f0;border-radius:4px;height:14px;width:160px;overflow:hidden;margin-left:auto">
-            <div style="background:{color_global};width:{max(2, pct_global)}%;height:14px;border-radius:4px"></div>
-          </div>
-          <div style="font-size:0.7rem;color:#999;margin-top:4px;text-align:right">{total_computables - total_incumple} dentro de SLA</div>
-        </td>
-      </tr>
+      {productos_html}
     </table>
   </div>
 
-  <!-- COLAS: barras de progreso -->
-  <div style="padding:16px 28px 4px;background:#fff">
-    <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#999;margin-bottom:4px">Detalle por cola</div>
-    <table style="width:100%;border-collapse:collapse">
-      {cards_html}
-    </table>
-  </div>
+  <!-- TENDENCIA -->
+  {tendencia_block}
 
-  <!-- ANÁLISIS AUTOMÁTICO -->
+  <!-- ANÁLISIS -->
   <div style="padding:16px 28px 16px;background:#fafafa;border-top:1px solid #f0f0f0;border-bottom:1px solid #f0f0f0">
     <div style="font-size:0.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#999;margin-bottom:10px">Análisis del día</div>
-    <ul style="margin:0;padding-left:18px">
-      {analisis_html}
-    </ul>
+    <ul style="margin:0;padding-left:18px">{analisis_html}</ul>
   </div>
 
   {resumen_ia_html}
 
-  <!-- EVOLUCIÓN (placeholder) -->
-  <div style="padding:12px 28px 16px;background:#fff">
-    {evolucion_html}
-  </div>
-
-  <!-- BOTÓN DASHBOARD COMPARTIDO -->
+  <!-- BOTÓN -->
   <div style="padding:16px 28px 20px;background:#fff;text-align:center;border-top:1px solid #f0f0f0">
     <a href="https://samuelminguez-hue.github.io/bost-sla/"
        style="display:inline-block;background:#FF5900;color:#fff;font-family:Arial,Helvetica,sans-serif;
               font-size:0.875rem;font-weight:700;padding:11px 28px;border-radius:3px;
-              text-decoration:none;letter-spacing:.03em">
-      Ver dashboard completo
-    </a>
-    <div style="margin-top:8px;font-size:0.72rem;color:#999">
-      Acceso directo al informe interactivo con filtros, histórico y exportación CSV
-    </div>
+              text-decoration:none;letter-spacing:.03em">Ver dashboard completo</a>
+    <div style="margin-top:8px;font-size:0.72rem;color:#999">Informe interactivo con filtros, histórico y exportación CSV</div>
   </div>
 
   <!-- PIE -->
@@ -1196,7 +1250,7 @@ def enviar_email_prediccion(rows_riesgo, now, intentos=3):
                 print(f"[prediccion] ERROR al enviar email alerta: {e}")
 
 
-def enviar_email(asunto, html_path, results, now, intentos=3):
+def enviar_email(asunto, html_path, results, now, historico=None, intentos=3):
     """
     Envía el informe por email via Outlook COM.
     - Cuerpo: resumen corto con KPIs por cola
@@ -1210,7 +1264,7 @@ def enviar_email(asunto, html_path, results, now, intentos=3):
         print("[email] ERROR: pywin32 no instalado. Ejecuta: pip install pywin32")
         return False
 
-    cuerpo = build_email_body(results, now)
+    cuerpo = build_email_body(results, now, historico=historico)
 
     for intento in range(1, intentos + 1):
         try:
@@ -1323,27 +1377,12 @@ def extraer_kpis_de_html(html_path):
     if len(pcts) < 2 or len(incumples) < 2:
         return None
 
-    # Compatibilidad: HTMLs viejos tienen 4 colas, nuevos tienen 2
-    if len(pcts) >= 4:
-        # HTML antiguo con 4 colas — calcular "fijo" como media ponderada
-        stfijo_pct = float(pcts[0]); stfijo_inc = int(incumples[0])
-        sgi_pct    = float(pcts[1]); sgi_inc    = int(incumples[1])
-        gior_pct   = float(pcts[2]); gior_inc   = int(incumples[2])
-        log_pct    = float(pcts[3]); log_inc    = int(incumples[3])
-        # Porcentaje fijo = promedio simple de los 3 (sin datos de computables en HTML viejo)
-        fijo_pct = round((stfijo_pct + sgi_pct + gior_pct) / 3, 1)
-        fijo_inc = stfijo_inc + sgi_inc + gior_inc
-        return {
-            "fijo":      {"pct": fijo_pct,  "incumple": fijo_inc},
-            "logistica": {"pct": log_pct,   "incumple": log_inc},
-        }
-    else:
-        # HTML nuevo con 2 colas
-        keys = [s["key"] for s in DISPLAY_SECCIONES]
-        return {
-            keys[i]: {"pct": float(pcts[i]), "incumple": int(incumples[i])}
-            for i in range(2)
-        }
+    keys = [s["key"] for s in DISPLAY_SECCIONES]
+    n = min(len(pcts), len(keys))
+    return {
+        keys[i]: {"pct": float(pcts[i]), "incumple": int(incumples[i])}
+        for i in range(n)
+    }
 
 
 def cargar_historico(dias=14):
@@ -1499,7 +1538,7 @@ def generar_global_html(results, now, historico):
 
     for sec in DISPLAY_SECCIONES:
         rows = results[sec["key"]]
-        if sec["key"] == "logistica":
+        if "logistica" in sec["key"]:
             computables = [r for r in rows if r.get("estado_sla") != "EXCLUIDO"]
         else:
             computables = rows
@@ -1618,11 +1657,11 @@ def generar_global_html(results, now, historico):
 
     chart_js = (
         "const CHART_DATA = " + historico_js + ";\n"
-        "const COLA_COLORS = {fijo:'#FF5900',logistica:'#9c27b0'};\n"
-        "const COLA_LABELS = {fijo:'STFIJO·SGI·GIOR',logistica:'Logística'};\n"
-        "const COLA_KEYS   = ['fijo','logistica'];\n"
-        "var activeDays = 7;\n"
-        "var visibleColas = {fijo:true,logistica:true};\n"
+        "const COLA_COLORS = {fijo:'#FF5900',logistica:'#9c27b0',tv:'#1565C0',tv_logistica:'#00796B'};\n"
+        "const COLA_LABELS = {fijo:'STFIJO·SGI·GIOR',logistica:'Logística',tv:'TV',tv_logistica:'TV Logística'};\n"
+        "const COLA_KEYS   = ['fijo','logistica','tv','tv_logistica'];\n"
+        "var chartGranularity = 'days';\n"
+        "var visibleColas = {fijo:true,logistica:true,tv:true,tv_logistica:true};\n"
         "var chartMode = 'colas';\n"
         "var slaChart = null;\n"
         "\n"
@@ -1731,13 +1770,67 @@ def generar_global_html(results, now, historico):
         "  };\n"
         "}\n"
         "\n"
+        "function filterByRange(data){\n"
+        "  var from=document.getElementById('chart-from')?document.getElementById('chart-from').value:'';\n"
+        "  var to=document.getElementById('chart-to')?document.getElementById('chart-to').value:'';\n"
+        "  if(!from&&!to) return data;\n"
+        "  return data.filter(function(d){return(!from||d.fecha>=from)&&(!to||d.fecha<=to);});\n"
+        "}\n"
+        "function aggregateWeeks(data){\n"
+        "  var m={};\n"
+        "  data.forEach(function(d){\n"
+        "    var dt=new Date(d.fecha+'T00:00:00'),day=dt.getDay(),diff=dt.getDate()-(day===0?6:day-1);\n"
+        "    var mon=new Date(new Date(d.fecha+'T00:00:00').setDate(diff));\n"
+        "    var k=mon.toISOString().slice(0,10);\n"
+        "    if(!m[k]) m[k]={fecha:k};\n"
+        "    COLA_KEYS.forEach(function(c){\n"
+        "      if(!d[c]) return;\n"
+        "      if(!m[k][c]) m[k][c]={pct:0,incumple:0,n:0};\n"
+        "      m[k][c].pct+=d[c].pct; m[k][c].incumple+=d[c].incumple; m[k][c].n++;\n"
+        "    });\n"
+        "  });\n"
+        "  return Object.values(m).map(function(w){\n"
+        "    var r={fecha:w.fecha};\n"
+        "    COLA_KEYS.forEach(function(c){if(w[c])r[c]={pct:Math.round(w[c].pct/w[c].n*10)/10,incumple:w[c].incumple};});\n"
+        "    return r;\n"
+        "  }).sort(function(a,b){return a.fecha>b.fecha?1:-1;});\n"
+        "}\n"
+        "function aggregateMonths(data){\n"
+        "  var m={};\n"
+        "  data.forEach(function(d){\n"
+        "    var k=d.fecha.slice(0,7);\n"
+        "    if(!m[k]) m[k]={fecha:k};\n"
+        "    COLA_KEYS.forEach(function(c){\n"
+        "      if(!d[c]) return;\n"
+        "      if(!m[k][c]) m[k][c]={pct:0,incumple:0,n:0};\n"
+        "      m[k][c].pct+=d[c].pct; m[k][c].incumple+=d[c].incumple; m[k][c].n++;\n"
+        "    });\n"
+        "  });\n"
+        "  return Object.values(m).map(function(w){\n"
+        "    var r={fecha:w.fecha};\n"
+        "    COLA_KEYS.forEach(function(c){if(w[c])r[c]={pct:Math.round(w[c].pct/w[c].n*10)/10,incumple:w[c].incumple};});\n"
+        "    return r;\n"
+        "  }).sort(function(a,b){return a.fecha>b.fecha?1:-1;});\n"
+        "}\n"
+        "function updateSubtitle(){\n"
+        "  var el=document.getElementById('chart-subtitle');\n"
+        "  if(!el) return;\n"
+        "  var labels={days:'\\u00daltimos 7 d\\u00edas',weeks:'Agrupado por semana',months:'Agrupado por mes',all:'Hist\\u00f3rico completo'};\n"
+        "  el.textContent=labels[chartGranularity]||'';\n"
+        "}\n"
         "function drawChart(){\n"
-        "  var data = activeDays > 0 ? CHART_DATA.slice(-activeDays) : CHART_DATA;\n"
-        "  var ctx = document.getElementById('sla-chart');\n"
+        "  var base=filterByRange(CHART_DATA);\n"
+        "  var data;\n"
+        "  if(chartGranularity==='weeks') data=aggregateWeeks(base);\n"
+        "  else if(chartGranularity==='months') data=aggregateMonths(base);\n"
+        "  else if(chartGranularity==='days') data=base.slice(-7);\n"
+        "  else data=base;\n"
+        "  updateSubtitle();\n"
+        "  var ctx=document.getElementById('sla-chart');\n"
         "  if(!ctx) return;\n"
-        "  if(slaChart){ slaChart.destroy(); slaChart = null; }\n"
-        "  if(data.length === 0) return;\n"
-        "  slaChart = new Chart(ctx, buildChartConfig(data));\n"
+        "  if(slaChart){slaChart.destroy();slaChart=null;}\n"
+        "  if(data.length===0) return;\n"
+        "  slaChart=new Chart(ctx,buildChartConfig(data));\n"
         "}\n"
         "\n"
         "document.querySelectorAll('.chart-mode-btn').forEach(function(btn){\n"
@@ -1755,10 +1848,15 @@ def generar_global_html(results, now, historico):
         "  btn.addEventListener('click',function(){\n"
         "    document.querySelectorAll('.chart-filter-btn').forEach(function(b){b.classList.remove('active');});\n"
         "    this.classList.add('active');\n"
-        "    activeDays=parseInt(this.dataset.days)||0;\n"
+        "    chartGranularity=this.dataset.gran||'days';\n"
         "    drawChart();\n"
         "  });\n"
         "});\n"
+        "\n"
+        "var _cfrom=document.getElementById('chart-from'),_cto=document.getElementById('chart-to'),_cclr=document.getElementById('chart-range-clear');\n"
+        "if(_cfrom)_cfrom.addEventListener('change',drawChart);\n"
+        "if(_cto)_cto.addEventListener('change',drawChart);\n"
+        "if(_cclr)_cclr.addEventListener('click',function(){if(_cfrom)_cfrom.value='';if(_cto)_cto.value='';drawChart();});\n"
         "\n"
         "document.querySelectorAll('.cola-toggle-btn').forEach(function(btn){\n"
         "  var key=btn.dataset.cola;\n"
@@ -1968,8 +2066,7 @@ def generar_global_html(results, now, historico):
     <span class="mo-nav-brand">BOST · SLA Dashboard</span>
     <ul class="mo-nav-links">
       <li><a href="global.html" class="active">Global</a></li>
-      <li><a href="fijo.html">Fijo</a></li>
-      <li><a href="tv.html">TV</a></li>
+      <li><a href="fijo.html">Fijo + TV</a></li>
       <li><a href="opits.html">OPITs</a></li>
     </ul>
   </div>
@@ -2025,10 +2122,19 @@ def generar_global_html(results, now, historico):
       <div style="width:1px;height:20px;background:var(--mo-border)"></div>
       <!-- Periodo -->
       <div class="chart-filters">
-        <button class="chart-filter-btn active" data-days="7">Semana</button>
-        <button class="chart-filter-btn" data-days="30">Mes</button>
-        <button class="chart-filter-btn" data-days="0">Todo</button>
+        <button class="chart-filter-btn active" data-gran="days">7 d&iacute;as</button>
+        <button class="chart-filter-btn" data-gran="weeks">Semanas</button>
+        <button class="chart-filter-btn" data-gran="months">Meses</button>
+        <button class="chart-filter-btn" data-gran="all">Todo</button>
       </div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:6px;flex-wrap:wrap">
+        <span style="font-size:0.7rem;color:var(--mo-muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em">Rango:</span>
+        <input type="date" id="chart-from" style="font-size:0.75rem;padding:2px 6px;border:1.5px solid var(--mo-border);border-radius:4px;background:var(--mo-white);color:var(--mo-text)">
+        <span style="font-size:0.75rem;color:var(--mo-muted)">—</span>
+        <input type="date" id="chart-to" style="font-size:0.75rem;padding:2px 6px;border:1.5px solid var(--mo-border);border-radius:4px;background:var(--mo-white);color:var(--mo-text)">
+        <button id="chart-range-clear" style="font-size:0.72rem;padding:2px 8px;border:1.5px solid var(--mo-border);border-radius:4px;background:var(--mo-white);color:var(--mo-muted);cursor:pointer">✕</button>
+      </div>
+      <div class="section-subtitle" id="chart-subtitle" style="margin-top:4px;font-size:0.72rem;color:var(--mo-muted)"></div>
     </div>
   </div>
   <!-- Cola toggles -->
@@ -2039,8 +2145,10 @@ def generar_global_html(results, now, historico):
     <div style="width:1px;height:18px;background:var(--mo-border);margin:0 2px"></div>
     <div id="cola-controls" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
       <span style="font-size:0.7rem;color:var(--mo-muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em">Colas:</span>
-      <button class="cola-toggle-btn" data-cola="fijo"      style="border-color:#FF5900;color:#FF5900">STFIJO&middot;SGI&middot;GIOR</button>
-      <button class="cola-toggle-btn" data-cola="logistica" style="border-color:#9c27b0;color:#9c27b0">Log&iacute;stica</button>
+      <button class="cola-toggle-btn" data-cola="fijo"         style="border-color:#FF5900;color:#FF5900">STFIJO&middot;SGI&middot;GIOR</button>
+      <button class="cola-toggle-btn" data-cola="logistica"    style="border-color:#9c27b0;color:#9c27b0">Log&iacute;stica</button>
+      <button class="cola-toggle-btn" data-cola="tv"           style="border-color:#1565C0;color:#1565C0">TV</button>
+      <button class="cola-toggle-btn" data-cola="tv_logistica" style="border-color:#00796B;color:#00796B">TV Log&iacute;stica</button>
     </div>
   </div>
   <div class="section-subtitle">% cumplimiento diario &middot; Objetivo: 80% (l&iacute;nea amarilla)</div>
@@ -2072,8 +2180,7 @@ def generar_global_html(results, now, historico):
     <span style="margin-left:10px">Generado automáticamente · BOST MasOrange · {fecha_str} {hora_str}h</span>
   </div>
   <div class="mo-footer-links">
-    <a href="fijo.html">Informe Fijo</a>
-    <a href="tv.html">TV (próx.)</a>
+    <a href="fijo.html">Informe Fijo + TV</a>
   </div>
 </footer>
 
@@ -2132,6 +2239,11 @@ def esperar_datos_bq(client, tz, hora_limite=10, minutos_limite=30, intervalo_mi
     Devuelve True si los datos están listos, False si se agotó el tiempo.
     """
     import time
+    now = datetime.now(tz=tz)
+    # Fin de semana: ETL no carga sábado/domingo — salir sin esperar
+    if now.weekday() >= 5:
+        print(f"[BQ] Fin de semana ({['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'][now.weekday()]}) — ETL no esperado hoy. Sin informe.")
+        return False
     while True:
         now = datetime.now(tz=tz)
         if bq_datos_listos(client, tz):
@@ -2214,6 +2326,11 @@ def main():
         results.get("stfijo", []) + results.get("sgi", []) + results.get("gior", []),
         key=lambda r: -(r.get("horas_sin_gestion") or 0)
     )
+    # tv_base → tv (sin fusión, cola única)
+    results["tv"] = sorted(
+        results.get("tv_base", []),
+        key=lambda r: -(r.get("horas_sin_gestion") or 0)
+    )
 
     # Guard: si BQ no cargó hoy (fin de semana sin ETL), no generar informe vacío
     total_tickets = sum(len(v) for v in results.values())
@@ -2242,8 +2359,8 @@ def main():
 
     # Envío email L-V (el script corre L-D para tener KPI diario, pero solo se envía en días laborables)
     if now.weekday() < 5:  # 0=lunes … 4=viernes
-        asunto = f"Informe SLA Fijo — {now.strftime('%d/%m/%Y')} — {now.strftime('%H:%M')}h"
-        enviar_email(asunto, out, results, now)
+        asunto = f"Informe SLA Fijo + TV — {now.strftime('%d/%m/%Y')} — {now.strftime('%H:%M')}h"
+        enviar_email(asunto, out, results, now, historico=historico)
 
         # BST-13236 (Predicción SLA): DESCARTADO 2026-06-12
         # BQ carga estados con ~33h de desfase (snapshot 00:00 del día anterior).
