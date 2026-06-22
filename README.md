@@ -67,7 +67,7 @@ python informe_sla_fijo.py
 python generar_tv_preview.py
 
 # Modo prueba — email solo a samuel.minguez@masorange.es
-python informe_sla_fijo.py --solo-samuel
+python informe_sla_fijo.py --solo-samuel   # (email interno del equipo)
 ```
 
 ---
