@@ -53,7 +53,7 @@
     .hero-pill {
       padding:6px 16px; border-radius:20px; font-size:0.85rem;
       font-weight:700; color:#fff;
-      background:#B71C1C;
+      background:#E65100;
     }
 
     /* KPI GLOBAL */
@@ -181,8 +181,7 @@
     <span class="mo-nav-brand">BOST · SLA Dashboard</span>
     <ul class="mo-nav-links">
       <li><a href="global.html" class="active">Global</a></li>
-      <li><a href="fijo.html">Fijo</a></li>
-      <li><a href="tv.html">TV</a></li>
+      <li><a href="fijo.html">Fijo + TV</a></li>
       <li><a href="opits.html">OPITs</a></li>
     </ul>
   </div>
@@ -206,17 +205,17 @@
 <section class="hero">
   <div>
     <div class="hero-title">SLA Global</div>
-    <div class="hero-sub">Lunes, 22/06/2026 &middot; Datos a las 08:30h &middot; Generado 09:00h</div>
+    <div class="hero-sub">Martes, 23/06/2026 &middot; Datos a las 08:30h &middot; Generado 09:00h</div>
   </div>
-  <div class="hero-pill">🔴 CRÍTICO</div>
+  <div class="hero-pill">⚠️ ATENCIÓN</div>
 </section>
 
 <!-- KPI GLOBAL -->
 <div class="kpi-global-block">
-  <div class="kpi-global-number">36.1%</div>
+  <div class="kpi-global-number">76.9%</div>
   <div>
     <div class="kpi-global-label">Cumplimiento global SLA</div>
-    <div class="kpi-global-detail">452 cumplen · <strong style="color:#C62828">800 incumplen</strong> · 1252 total computables</div>
+    <div class="kpi-global-detail">1390 cumplen · <strong style="color:#C62828">418 incumplen</strong> · 1808 total computables</div>
   </div>
 </div>
 
@@ -228,22 +227,44 @@
             <span class="kpi-card-label">STFIJO</span>
             <span class="kpi-card-sla">SLA 24h</span>
           </div>
-          <div class="kpi-card-pct" style="color:#C62828">38.0%</div>
+          <div class="kpi-card-pct" style="color:#C62828">79.1%</div>
           <div class="kpi-bar-bg">
-            <div class="kpi-bar-fill" style="background:#C62828;width:38.0%"></div>
+            <div class="kpi-bar-fill" style="background:#C62828;width:79.1%"></div>
           </div>
-          <div class="kpi-card-detail">718 incumplen · 1158 computables</div>
+          <div class="kpi-card-detail">272 incumplen · 1302 computables</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-card-header">
             <span class="kpi-card-label">Logística</span>
             <span class="kpi-card-sla">SLA 24h</span>
           </div>
-          <div class="kpi-card-pct" style="color:#C62828">12.8%</div>
+          <div class="kpi-card-pct" style="color:#C62828">50.5%</div>
           <div class="kpi-bar-bg">
-            <div class="kpi-bar-fill" style="background:#C62828;width:12.8%"></div>
+            <div class="kpi-bar-fill" style="background:#C62828;width:50.5%"></div>
           </div>
-          <div class="kpi-card-detail">82 incumplen · 94 computables</div>
+          <div class="kpi-card-detail">54 incumplen · 109 computables</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card-header">
+            <span class="kpi-card-label">TV</span>
+            <span class="kpi-card-sla">SLA 24h</span>
+          </div>
+          <div class="kpi-card-pct" style="color:#2E7D32">83.4%</div>
+          <div class="kpi-bar-bg">
+            <div class="kpi-bar-fill" style="background:#2E7D32;width:83.4%"></div>
+          </div>
+          <div class="kpi-card-detail">51 incumplen · 307 computables</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card-header">
+            <span class="kpi-card-label">TV Logística</span>
+            <span class="kpi-card-sla">SLA 24h</span>
+          </div>
+          <div class="kpi-card-pct" style="color:#C62828">54.4%</div>
+          <div class="kpi-bar-bg">
+            <div class="kpi-bar-fill" style="background:#C62828;width:54.4%"></div>
+          </div>
+          <div class="kpi-card-detail">41 incumplen · 90 computables</div>
         </div>
 </div>
 
@@ -260,11 +281,19 @@
       <div style="width:1px;height:20px;background:var(--mo-border)"></div>
       <!-- Periodo -->
       <div class="chart-filters">
-        <button class="chart-filter-btn active" data-gran="days">7 días</button>
+        <button class="chart-filter-btn active" data-gran="days">7 d&iacute;as</button>
         <button class="chart-filter-btn" data-gran="weeks">Semanas</button>
         <button class="chart-filter-btn" data-gran="months">Meses</button>
         <button class="chart-filter-btn" data-gran="all">Todo</button>
       </div>
+      <div style="display:flex;align-items:center;gap:6px;margin-top:6px;flex-wrap:wrap">
+        <span style="font-size:0.7rem;color:var(--mo-muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em">Rango:</span>
+        <input type="date" id="chart-from" style="font-size:0.75rem;padding:2px 6px;border:1.5px solid var(--mo-border);border-radius:4px;background:var(--mo-white);color:var(--mo-text)">
+        <span style="font-size:0.75rem;color:var(--mo-muted)">—</span>
+        <input type="date" id="chart-to" style="font-size:0.75rem;padding:2px 6px;border:1.5px solid var(--mo-border);border-radius:4px;background:var(--mo-white);color:var(--mo-text)">
+        <button id="chart-range-clear" style="font-size:0.72rem;padding:2px 8px;border:1.5px solid var(--mo-border);border-radius:4px;background:var(--mo-white);color:var(--mo-muted);cursor:pointer">✕</button>
+      </div>
+      <div class="section-subtitle" id="chart-subtitle" style="margin-top:4px;font-size:0.72rem;color:var(--mo-muted)"></div>
     </div>
   </div>
   <!-- Cola toggles -->
@@ -275,29 +304,24 @@
     <div style="width:1px;height:18px;background:var(--mo-border);margin:0 2px"></div>
     <div id="cola-controls" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
       <span style="font-size:0.7rem;color:var(--mo-muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em">Colas:</span>
-      <button class="cola-toggle-btn" data-cola="fijo"      style="border-color:#FF5900;color:#FF5900">STFIJO&middot;SGI&middot;GIOR</button>
-      <button class="cola-toggle-btn" data-cola="logistica" style="border-color:#9c27b0;color:#9c27b0">Log&iacute;stica</button>
+      <button class="cola-toggle-btn" data-cola="fijo"         style="border-color:#FF5900;color:#FF5900">STFIJO&middot;SGI&middot;GIOR</button>
+      <button class="cola-toggle-btn" data-cola="logistica"    style="border-color:#9c27b0;color:#9c27b0">Log&iacute;stica</button>
+      <button class="cola-toggle-btn" data-cola="tv"           style="border-color:#1565C0;color:#1565C0">TV</button>
+      <button class="cola-toggle-btn" data-cola="tv_logistica" style="border-color:#00796B;color:#00796B">TV Log&iacute;stica</button>
     </div>
   </div>
-  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
-    <label style="font-size:.78rem;color:var(--mo-muted);font-weight:700">Rango:</label>
-    <input type="date" id="chart-from" style="padding:4px 8px;border-radius:4px;border:1.5px solid var(--mo-border);background:var(--mo-white);color:var(--mo-text);font-size:.8rem;cursor:pointer" title="Fecha inicio">
-    <span style="font-size:.78rem;color:var(--mo-muted)">—</span>
-    <input type="date" id="chart-to" style="padding:4px 8px;border-radius:4px;border:1.5px solid var(--mo-border);background:var(--mo-white);color:var(--mo-text);font-size:.8rem;cursor:pointer" title="Fecha fin">
-    <button id="chart-range-clear" style="padding:4px 10px;border-radius:4px;border:1.5px solid var(--mo-border);background:none;color:var(--mo-muted);font-size:.75rem;cursor:pointer" title="Limpiar rango">✕</button>
-  </div>
-  <div class="section-subtitle" id="chart-subtitle">% cumplimiento diario &middot; Objetivo: 80% (l&iacute;nea amarilla)</div>
+  <div class="section-subtitle">% cumplimiento diario &middot; Objetivo: 80% (l&iacute;nea amarilla)</div>
   <div style="position:relative;height:240px">
     <canvas id="sla-chart"></canvas>
   </div>
-  <div class="chart-source">Datos reales de los últimos 9 días (puente HTML · <a href="https://jiranext.masorange.es/browse/BST-13142" style="color:#FF5900">BST-13142</a> para histórico oficial en BQ).</div>
+  <div class="chart-source">Datos reales de los últimos 10 días (puente HTML · <a href="https://jiranext.masorange.es/browse/BST-13142" style="color:#FF5900">BST-13142</a> para histórico oficial en BQ).</div>
 </div>
 
 <!-- ANÁLISIS -->
 <div class="section-block">
   <div class="section-title">Análisis del día</div>
   <ul class="analisis-list" style="margin-top:12px">
-    <li>La cola con mayor incumplimiento hoy es <strong>Logística</strong> (82 de 94 tickets, 12.8% cumplimiento).</li><li><strong>14 tickets en STFIJO-ZL superan las 96h sin gestión</strong>: <a href="https://tgjira.masmovil.com/browse/ATC-8547586" style="color:#FF5900;text-decoration:none">ATC-8547586</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8546651" style="color:#FF5900;text-decoration:none">ATC-8546651</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8537086" style="color:#FF5900;text-decoration:none">ATC-8537086</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8554440" style="color:#FF5900;text-decoration:none">ATC-8554440</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8561120" style="color:#FF5900;text-decoration:none">ATC-8561120</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8563235" style="color:#FF5900;text-decoration:none">ATC-8563235</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8549569" style="color:#FF5900;text-decoration:none">ATC-8549569</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8554486" style="color:#FF5900;text-decoration:none">ATC-8554486</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8523016" style="color:#FF5900;text-decoration:none">ATC-8523016</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8552487" style="color:#FF5900;text-decoration:none">ATC-8552487</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8564618" style="color:#FF5900;text-decoration:none">ATC-8564618</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8556035" style="color:#FF5900;text-decoration:none">ATC-8556035</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8548070" style="color:#FF5900;text-decoration:none">ATC-8548070</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8568153" style="color:#FF5900;text-decoration:none">ATC-8568153</a>.</li><li>Ninguna cola supera el objetivo del 80% hoy — se recomienda revisión integral.</li>
+    <li>La cola con mayor incumplimiento hoy es <strong>Logística</strong> (54 de 109 tickets, 50.5% cumplimiento).</li><li><strong>3 tickets en STFIJO-ZL superan las 96h sin gestión</strong>: <a href="https://tgjira.masmovil.com/browse/ATC-8561120" style="color:#FF5900;text-decoration:none">ATC-8561120</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8554486" style="color:#FF5900;text-decoration:none">ATC-8554486</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8568153" style="color:#FF5900;text-decoration:none">ATC-8568153</a>.</li><li>TV lidera con 83.4% de cumplimiento.</li>
   </ul>
 </div>
 
@@ -312,11 +336,10 @@
       <rect x="36" y="24" width="16" height="16" fill="#FF5900"/>
       <circle cx="104" cy="34" r="28" fill="none" stroke="#fff" stroke-width="10"/>
     </svg>
-    <span style="margin-left:10px">Generado automáticamente · BOST MasOrange · 22/06/2026 09:00h</span>
+    <span style="margin-left:10px">Generado automáticamente · BOST MasOrange · 23/06/2026 09:00h</span>
   </div>
   <div class="mo-footer-links">
-    <a href="fijo.html">Informe Fijo</a>
-    <a href="tv.html">TV (próx.)</a>
+    <a href="fijo.html">Informe Fijo + TV</a>
   </div>
 </footer>
 
@@ -338,12 +361,12 @@
     applyTheme(isDark);
     btn.addEventListener('click', function() { isDark = !isDark; applyTheme(isDark); });
   })();
-  const CHART_DATA = [{"fecha": "2026-06-10", "fijo": {"pct": 90.4, "incumple": 348}, "logistica": {"pct": 9.9, "incumple": 172}}, {"fecha": "2026-06-11", "fijo": {"pct": 88.8, "incumple": 413}, "logistica": {"pct": 9.0, "incumple": 182}}, {"fecha": "2026-06-12", "fijo": {"pct": 94.4, "incumple": 190}, "logistica": {"pct": 10.9, "incumple": 212}}, {"fecha": "2026-06-15", "fijo": {"pct": 91.0, "incumple": 235}, "logistica": {"pct": 0.8, "incumple": 240}}, {"fecha": "2026-06-16", "fijo": {"pct": 91.0, "incumple": 89}, "logistica": {"pct": 11.6, "incumple": 228}}, {"fecha": "2026-06-17", "fijo": {"pct": 80.3, "incumple": 211}, "logistica": {"pct": 37.5, "incumple": 167}}, {"fecha": "2026-06-18", "fijo": {"pct": 85.7, "incumple": 157}, "logistica": {"pct": 37.2, "incumple": 186}}, {"fecha": "2026-06-19", "fijo": {"pct": 79.5, "incumple": 228}, "logistica": {"pct": 57.0, "incumple": 46}}, {"fecha": "2026-06-22", "fijo": {"pct": 38.0, "incumple": 718}, "logistica": {"pct": 12.8, "incumple": 82}}];
-const COLA_COLORS = {fijo:'#FF5900',logistica:'#9c27b0'};
-const COLA_LABELS = {fijo:'STFIJO·SGI·GIOR',logistica:'Logística'};
-const COLA_KEYS   = ['fijo','logistica'];
+  const CHART_DATA = [{"fecha": "2026-06-10", "fijo": {"pct": 71.2, "incumple": 348}, "logistica": {"pct": 100.0, "incumple": 0}, "tv": {"pct": 100.0, "incumple": 0}, "tv_logistica": {"pct": 9.9, "incumple": 172}}, {"fecha": "2026-06-11", "fijo": {"pct": 66.4, "incumple": 413}, "logistica": {"pct": 100.0, "incumple": 0}, "tv": {"pct": 100.0, "incumple": 0}, "tv_logistica": {"pct": 9.0, "incumple": 182}}, {"fecha": "2026-06-12", "fijo": {"pct": 83.3, "incumple": 190}, "logistica": {"pct": 100.0, "incumple": 0}, "tv": {"pct": 100.0, "incumple": 0}, "tv_logistica": {"pct": 10.9, "incumple": 212}}, {"fecha": "2026-06-15", "fijo": {"pct": 73.1, "incumple": 235}, "logistica": {"pct": 100.0, "incumple": 0}, "tv": {"pct": 100.0, "incumple": 0}, "tv_logistica": {"pct": 0.8, "incumple": 240}}, {"fecha": "2026-06-16", "fijo": {"pct": 91.0, "incumple": 89}, "logistica": {"pct": 11.6, "incumple": 228}}, {"fecha": "2026-06-17", "fijo": {"pct": 80.3, "incumple": 211}, "logistica": {"pct": 37.5, "incumple": 167}}, {"fecha": "2026-06-18", "fijo": {"pct": 85.7, "incumple": 157}, "logistica": {"pct": 37.2, "incumple": 186}}, {"fecha": "2026-06-19", "fijo": {"pct": 79.5, "incumple": 228}, "logistica": {"pct": 57.0, "incumple": 46}}, {"fecha": "2026-06-22", "fijo": {"pct": 38.0, "incumple": 718}, "logistica": {"pct": 12.8, "incumple": 82}}, {"fecha": "2026-06-23", "fijo": {"pct": 79.1, "incumple": 272}, "logistica": {"pct": 50.5, "incumple": 54}, "tv": {"pct": 83.4, "incumple": 51}, "tv_logistica": {"pct": 54.4, "incumple": 41}}];
+const COLA_COLORS = {fijo:'#FF5900',logistica:'#9c27b0',tv:'#1565C0',tv_logistica:'#00796B'};
+const COLA_LABELS = {fijo:'STFIJO·SGI·GIOR',logistica:'Logística',tv:'TV',tv_logistica:'TV Logística'};
+const COLA_KEYS   = ['fijo','logistica','tv','tv_logistica'];
 var chartGranularity = 'days';
-var visibleColas = {fijo:true,logistica:true};
+var visibleColas = {fijo:true,logistica:true,tv:true,tv_logistica:true};
 var chartMode = 'colas';
 var slaChart = null;
 
@@ -453,68 +476,53 @@ function buildChartConfig(data){
 }
 
 function filterByRange(data){
-  var from=document.getElementById('chart-from').value;
-  var to=document.getElementById('chart-to').value;
+  var from=document.getElementById('chart-from')?document.getElementById('chart-from').value:'';
+  var to=document.getElementById('chart-to')?document.getElementById('chart-to').value:'';
   if(!from&&!to) return data;
-  return data.filter(function(d){
-    if(from&&d.fecha<from) return false;
-    if(to&&d.fecha>to) return false;
-    return true;
-  });
+  return data.filter(function(d){return(!from||d.fecha>=from)&&(!to||d.fecha<=to);});
 }
-
 function aggregateWeeks(data){
-  var map={};
+  var m={};
   data.forEach(function(d){
-    var dt=new Date(d.fecha+'T12:00:00');
-    var dow=dt.getDay();
-    var diff=dow===0?-6:1-dow;
-    var mon=new Date(dt); mon.setDate(dt.getDate()+diff);
-    var key=mon.toISOString().slice(0,10);
-    if(!map[key]) map[key]={key:key,fijo:{s:0,n:0,inc:0},logistica:{s:0,n:0,inc:0}};
-    ['fijo','logistica'].forEach(function(c){
-      if(d[c]){map[key][c].s+=d[c].pct;map[key][c].n++;map[key][c].inc+=d[c].incumple;}
+    var dt=new Date(d.fecha+'T00:00:00'),day=dt.getDay(),diff=dt.getDate()-(day===0?6:day-1);
+    var mon=new Date(new Date(d.fecha+'T00:00:00').setDate(diff));
+    var k=mon.toISOString().slice(0,10);
+    if(!m[k]) m[k]={fecha:k};
+    COLA_KEYS.forEach(function(c){
+      if(!d[c]) return;
+      if(!m[k][c]) m[k][c]={pct:0,incumple:0,n:0};
+      m[k][c].pct+=d[c].pct; m[k][c].incumple+=d[c].incumple; m[k][c].n++;
     });
   });
-  return Object.values(map).sort(function(a,b){return a.key<b.key?-1:1;}).map(function(w){
-    var r={fecha:'Sem '+w.key.slice(5).replace('-','/')};
-    ['fijo','logistica'].forEach(function(c){
-      r[c]=w[c].n?{pct:Math.round(w[c].s/w[c].n*10)/10,incumple:w[c].inc}:null;
-    });
+  return Object.values(m).map(function(w){
+    var r={fecha:w.fecha};
+    COLA_KEYS.forEach(function(c){if(w[c])r[c]={pct:Math.round(w[c].pct/w[c].n*10)/10,incumple:w[c].incumple};});
     return r;
-  });
+  }).sort(function(a,b){return a.fecha>b.fecha?1:-1;});
 }
-
 function aggregateMonths(data){
-  var MESES=['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-  var map={};
+  var m={};
   data.forEach(function(d){
-    var key=d.fecha.slice(0,7);
-    if(!map[key]) map[key]={key:key,fijo:{s:0,n:0,inc:0},logistica:{s:0,n:0,inc:0}};
-    ['fijo','logistica'].forEach(function(c){
-      if(d[c]){map[key][c].s+=d[c].pct;map[key][c].n++;map[key][c].inc+=d[c].incumple;}
+    var k=d.fecha.slice(0,7);
+    if(!m[k]) m[k]={fecha:k};
+    COLA_KEYS.forEach(function(c){
+      if(!d[c]) return;
+      if(!m[k][c]) m[k][c]={pct:0,incumple:0,n:0};
+      m[k][c].pct+=d[c].pct; m[k][c].incumple+=d[c].incumple; m[k][c].n++;
     });
   });
-  return Object.values(map).sort(function(a,b){return a.key<b.key?-1:1;}).map(function(m){
-    var p=m.key.split('-');
-    var r={fecha:MESES[parseInt(p[1])-1]+' '+p[0]};
-    ['fijo','logistica'].forEach(function(c){
-      r[c]=m[c].n?{pct:Math.round(m[c].s/m[c].n*10)/10,incumple:m[c].inc}:null;
-    });
+  return Object.values(m).map(function(w){
+    var r={fecha:w.fecha};
+    COLA_KEYS.forEach(function(c){if(w[c])r[c]={pct:Math.round(w[c].pct/w[c].n*10)/10,incumple:w[c].incumple};});
     return r;
-  });
+  }).sort(function(a,b){return a.fecha>b.fecha?1:-1;});
 }
-
 function updateSubtitle(){
-  var sub=document.getElementById('chart-subtitle');
-  if(!sub) return;
-  var labels={days:'% cumplimiento diario · Objetivo: 80% (línea amarilla)',
-              weeks:'% cumplimiento promedio por semana · Objetivo: 80%',
-              months:'% cumplimiento promedio mensual · Objetivo: 80%',
-              all:'% cumplimiento diario (todos los datos) · Objetivo: 80%'};
-  sub.textContent=labels[chartGranularity]||labels.all;
+  var el=document.getElementById('chart-subtitle');
+  if(!el) return;
+  var labels={days:'\u00daltimos 7 d\u00edas',weeks:'Agrupado por semana',months:'Agrupado por mes',all:'Hist\u00f3rico completo'};
+  el.textContent=labels[chartGranularity]||'';
 }
-
 function drawChart(){
   var base=filterByRange(CHART_DATA);
   var data;
@@ -522,12 +530,12 @@ function drawChart(){
   else if(chartGranularity==='months') data=aggregateMonths(base);
   else if(chartGranularity==='days') data=base.slice(-7);
   else data=base;
+  updateSubtitle();
   var ctx=document.getElementById('sla-chart');
   if(!ctx) return;
   if(slaChart){slaChart.destroy();slaChart=null;}
   if(data.length===0) return;
   slaChart=new Chart(ctx,buildChartConfig(data));
-  updateSubtitle();
 }
 
 document.querySelectorAll('.chart-mode-btn').forEach(function(btn){
@@ -545,20 +553,15 @@ document.querySelectorAll('.chart-filter-btn').forEach(function(btn){
   btn.addEventListener('click',function(){
     document.querySelectorAll('.chart-filter-btn').forEach(function(b){b.classList.remove('active');});
     this.classList.add('active');
-    chartGranularity=this.dataset.gran;
+    chartGranularity=this.dataset.gran||'days';
     drawChart();
   });
 });
 
-['chart-from','chart-to'].forEach(function(id){
-  var el=document.getElementById(id);
-  if(el) el.addEventListener('change',drawChart);
-});
-document.getElementById('chart-range-clear')&&document.getElementById('chart-range-clear').addEventListener('click',function(){
-  document.getElementById('chart-from').value='';
-  document.getElementById('chart-to').value='';
-  drawChart();
-});
+var _cfrom=document.getElementById('chart-from'),_cto=document.getElementById('chart-to'),_cclr=document.getElementById('chart-range-clear');
+if(_cfrom)_cfrom.addEventListener('change',drawChart);
+if(_cto)_cto.addEventListener('change',drawChart);
+if(_cclr)_cclr.addEventListener('click',function(){if(_cfrom)_cfrom.value='';if(_cto)_cto.value='';drawChart();});
 
 document.querySelectorAll('.cola-toggle-btn').forEach(function(btn){
   var key=btn.dataset.cola;
