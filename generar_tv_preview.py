@@ -7,7 +7,11 @@ Uso standalone — no modifica informe_sla_fijo.py ni el flujo de Fijo.
 
 import re
 import sys
-from datetime import datetime
+import pathlib
+import urllib.request
+import urllib.error
+import json as _json
+from datetime import datetime, date
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
@@ -17,6 +21,61 @@ PROJECT_ID   = "mm-datamart-kd"
 SCRIPT_DIR   = Path(__file__).parent
 REPORTES_DIR = SCRIPT_DIR / "reportes"
 TZ           = ZoneInfo("Europe/Madrid")
+
+# ─────────────────────────────────────────────────────────────────
+# JIRA ENRICHMENT — rellena PRIO_OPIT y FECHA_CREACION_OPIT para
+# filas donde BQ no tiene esos datos (prefijos MYS-, TTV-, etc.)
+# ─────────────────────────────────────────────────────────────────
+def _jira_pat():
+    try:
+        sh = pathlib.Path.home() / ".claude" / "jira-personal.sh"
+        m = re.search(r'JIRA_PAT_SAMUEL="([^"]+)"', sh.read_text(encoding="utf-8"))
+        return m.group(1) if m else ""
+    except Exception:
+        return ""
+
+
+def enriquecer_opits_jira(rows):
+    """Para filas con PRIO_OPIT o FECHA_CREACION_OPIT nulos, consulta Jira API."""
+    pat = _jira_pat()
+    if not pat:
+        return rows
+
+    pendientes = [r for r in rows if r.get("PRIO_OPIT") is None or r.get("FECHA_CREACION_OPIT") is None]
+    if not pendientes:
+        return rows
+
+    print(f"  [Jira] Enriqueciendo {len(pendientes)} OPITs sin datos en BQ...")
+    base = "https://jiranext.masorange.es/rest/api/2/issue"
+    headers = {"Authorization": f"Bearer {pat}", "Content-Type": "application/json"}
+
+    for r in pendientes:
+        opit_key = r.get("opit_clave") or r.get("ISSUE_OPIT") or r.get("REMOTE_LINK_OPIT")
+        if not opit_key:
+            continue
+        try:
+            req = urllib.request.Request(
+                f"{base}/{opit_key}?fields=priority,created",
+                headers=headers
+            )
+            with urllib.request.urlopen(req, timeout=8) as resp:
+                data = _json.loads(resp.read())
+            fields = data.get("fields", {})
+            if r.get("PRIO_OPIT") is None:
+                r["PRIO_OPIT"] = (fields.get("priority") or {}).get("name")
+            if r.get("FECHA_CREACION_OPIT") is None and fields.get("created"):
+                created_str = fields["created"][:10]  # "YYYY-MM-DD"
+                r["FECHA_CREACION_OPIT"] = datetime.strptime(created_str, "%Y-%m-%d")
+                today = datetime.now(tz=ZoneInfo("Europe/Madrid")).date()
+                dias = (today - r["FECHA_CREACION_OPIT"].date()).days
+                r["dias_opit_abierto"] = dias
+                r["alerta_opit"] = "CRITICO" if dias > 10 else ("AVISO" if dias > 5 else "OK")
+            print(f"    {opit_key}: prio={r['PRIO_OPIT']} dias={r.get('dias_opit_abierto')}")
+        except Exception as e:
+            print(f"    [WARN] {opit_key}: {e}")
+
+    return rows
+
 
 # ─────────────────────────────────────────────────────────────────
 # BIGQUERY
@@ -236,6 +295,7 @@ def main():
 
     print("Ejecutando query OPITs...")
     rows_opit = run_query(client, "query_opit.sql")
+    rows_opit = enriquecer_opits_jira(rows_opit)
     tv_opit   = len([r for r in rows_opit if r.get("TIPO_SERVICIO") == "TV"])
     fijo_opit = len([r for r in rows_opit if r.get("TIPO_SERVICIO") != "TV"])
     print(f"  OPITs: {len(rows_opit)} total ({tv_opit} TV, {fijo_opit} Fijo)")
