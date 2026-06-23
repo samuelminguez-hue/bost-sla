@@ -1445,19 +1445,99 @@ def extraer_kpis_de_html(html_path):
         return result
 
 
-def cargar_historico(dias=14):
+def _calc_kpis_results(results):
+    """Calcula pct/incumple/total por sección de visualización desde resultados brutos de BQ."""
+    out = {}
+    for key in ["fijo", "logistica", "tv", "tv_logistica"]:
+        rows = results.get(key, [])
+        if key in ("logistica", "tv_logistica"):
+            comp = [r for r in rows if r.get("estado_sla") != "EXCLUIDO"]
+        else:
+            comp = rows
+        incumple = len([r for r in comp if r.get("estado_sla") == "INCUMPLE"])
+        total = len(comp)
+        pct = round(100 * (total - incumple) / total, 1) if total > 0 else 100.0
+        out[key] = {"pct": pct, "incumple": incumple, "total": total}
+    return out
+
+
+def _escribir_historico_bq(kpis, fecha, client):
+    """Insert/replace fila de KPIs diarios en mm-operaciones-bigquery.SSTT.ZZ_sla_fijo_diario."""
+    from google.cloud import bigquery as _bq
+    table_id = "mm-operaciones-bigquery.SSTT.ZZ_sla_fijo_diario"
+    schema = [
+        _bq.SchemaField("fecha", "DATE"),
+        _bq.SchemaField("pct_fijo", "FLOAT64"),
+        _bq.SchemaField("incumple_fijo", "INT64"),
+        _bq.SchemaField("total_fijo", "INT64"),
+        _bq.SchemaField("pct_logistica", "FLOAT64"),
+        _bq.SchemaField("incumple_logistica", "INT64"),
+        _bq.SchemaField("total_logistica", "INT64"),
+        _bq.SchemaField("pct_tv", "FLOAT64"),
+        _bq.SchemaField("incumple_tv", "INT64"),
+        _bq.SchemaField("total_tv", "INT64"),
+        _bq.SchemaField("pct_tv_logistica", "FLOAT64"),
+        _bq.SchemaField("incumple_tv_logistica", "INT64"),
+        _bq.SchemaField("total_tv_logistica", "INT64"),
+        _bq.SchemaField("ts_generado", "TIMESTAMP"),
+    ]
+    try:
+        client.get_table(table_id)
+    except Exception:
+        client.create_table(_bq.Table(table_id, schema=schema))
+        print(f"[BQ] Tabla {table_id} creada")
+    fecha_str = fecha.strftime("%Y-%m-%d")
+    client.query(f"DELETE FROM `{table_id}` WHERE fecha = '{fecha_str}'").result()
+    row = {
+        "fecha": fecha_str,
+        "pct_fijo": kpis["fijo"]["pct"], "incumple_fijo": kpis["fijo"]["incumple"], "total_fijo": kpis["fijo"]["total"],
+        "pct_logistica": kpis["logistica"]["pct"], "incumple_logistica": kpis["logistica"]["incumple"], "total_logistica": kpis["logistica"]["total"],
+        "pct_tv": kpis["tv"]["pct"], "incumple_tv": kpis["tv"]["incumple"], "total_tv": kpis["tv"]["total"],
+        "pct_tv_logistica": kpis["tv_logistica"]["pct"], "incumple_tv_logistica": kpis["tv_logistica"]["incumple"], "total_tv_logistica": kpis["tv_logistica"]["total"],
+        "ts_generado": datetime.now(tz=ZoneInfo("Europe/Madrid")).isoformat(),
+    }
+    errors = client.insert_rows_json(table_id, [row])
+    if errors:
+        print(f"[BQ] Error insertando histórico: {errors}")
+    else:
+        print(f"[BQ] Histórico guardado en BQ: {fecha_str}")
+
+
+def cargar_historico(dias=14, client=None):
     """
-    Escanea REPORTES_DIR buscando informes con nombre informe_YYYY-MM-DD.html
-    para los últimos `dias` días. Devuelve lista ordenada de dicts:
-      [{"fecha": date, "stfijo": {"pct":..., "incumple":...}, ...}, ...]
-    Solo incluye días para los que hay fichero Y los datos son parseables.
+    Devuelve lista ordenada de dicts:
+      [{"fecha": date, "fijo": {"pct":..., "incumple":...}, ...}, ...]
+    Lee primero de BQ (mm-operaciones-bigquery.SSTT.ZZ_sla_fijo_diario).
+    Si BQ no está disponible, fallback a informe_YYYY-MM-DD.html locales.
     """
     from datetime import date, timedelta
-
-    historico = []
     today = date.today()
 
-    for delta in range(dias - 1, -1, -1):  # más antiguo → más reciente
+    if client is not None:
+        try:
+            table_id = "mm-operaciones-bigquery.SSTT.ZZ_sla_fijo_diario"
+            fecha_desde = (today - timedelta(days=dias - 1)).strftime("%Y-%m-%d")
+            rows = list(client.query(
+                f"SELECT * FROM `{table_id}` WHERE fecha >= '{fecha_desde}' ORDER BY fecha"
+            ).result())
+            if rows:
+                historico = []
+                for r in rows:
+                    historico.append({
+                        "fecha": r["fecha"],
+                        "fijo":         {"pct": float(r["pct_fijo"]),         "incumple": int(r["incumple_fijo"])},
+                        "logistica":    {"pct": float(r["pct_logistica"]),     "incumple": int(r["incumple_logistica"])},
+                        "tv":           {"pct": float(r["pct_tv"]),            "incumple": int(r["incumple_tv"])},
+                        "tv_logistica": {"pct": float(r["pct_tv_logistica"]),  "incumple": int(r["incumple_tv_logistica"])},
+                    })
+                print(f"[BQ] Histórico: {len(historico)} días desde BQ")
+                return historico
+        except Exception as e:
+            print(f"[BQ] Histórico BQ no disponible ({e}) — fallback HTML")
+
+    # Fallback: leer HTML locales
+    historico = []
+    for delta in range(dias - 1, -1, -1):
         d = today - timedelta(days=delta)
         fname = REPORTES_DIR / f"informe_{d.strftime('%Y-%m-%d')}.html"
         if not fname.exists():
@@ -1468,7 +1548,6 @@ def cargar_historico(dias=14):
         entry = {"fecha": d}
         entry.update(kpis)
         historico.append(entry)
-
     return historico
 
 
@@ -1494,12 +1573,16 @@ def _build_svg_chart(historico, width=560, height=220):
 
     # Colores y etiquetas por cola
     COLA_COLORS = {
-        "fijo":      "#FF5900",
-        "logistica": "#9c27b0",
+        "fijo":         "#FF5900",
+        "logistica":    "#9c27b0",
+        "tv":           "#1565C0",
+        "tv_logistica": "#00796B",
     }
     COLA_LABELS = {
-        "fijo":      "STFIJO",
-        "logistica": "Logística",
+        "fijo":         "Fijo",
+        "logistica":    "Log.Fijo",
+        "tv":           "TV",
+        "tv_logistica": "Log.TV",
     }
 
     n = len(historico)
@@ -1519,7 +1602,7 @@ def _build_svg_chart(historico, width=560, height=220):
     )
 
     # Líneas de colas
-    for key in ["fijo", "logistica"]:
+    for key in ["fijo", "logistica", "tv", "tv_logistica"]:
         color = COLA_COLORS[key]
         label = COLA_LABELS[key]
         puntos = [(xs[i], y_for(historico[i][key]["pct"])) for i in range(n) if key in historico[i]]
@@ -2416,6 +2499,8 @@ def main():
         results.get("tv_base", []),
         key=lambda r: -(r.get("horas_sin_gestion") or 0)
     )
+    # KPIs calculados una sola vez — usados por BQ histórico y por el email
+    kpis_dia = _calc_kpis_results(results)
 
     # Guard: si BQ no cargó hoy (fin de semana sin ETL), no generar informe vacío
     total_tickets = sum(len(v) for v in results.values())
@@ -2435,12 +2520,17 @@ def main():
 
     # ── Global Dashboard con histórico real ───────────────────────────
     print("  . Cargando histórico ...", end=" ", flush=True)
-    historico = cargar_historico(dias=14)
+    historico = cargar_historico(dias=14, client=client)
     print(f"{len(historico)} días disponibles")
 
     print("  . Generando global.html ...", end=" ", flush=True)
     global_out = generar_global_html(results, now, historico)
     print(f"OK  -> {global_out}")
+    # Guardar KPIs del día en BQ (histórico persistente)
+    try:
+        _escribir_historico_bq(kpis_dia, now.date(), client)
+    except Exception as e:
+        print(f"[BQ] No se pudo guardar histórico: {e}")
 
     # Envío email L-V (el script corre L-D para tener KPI diario, pero solo se envía en días laborables)
     if now.weekday() < 5:  # 0=lunes … 4=viernes
