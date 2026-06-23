@@ -140,10 +140,9 @@ def build_rows_html(rows, col_gestion, sec_key):
     def fmt_rellamada(r):
         num = r.get("NUMERO_RELLAMADAS")
         fecha = r.get("FECHA_RELLAMADA")
-        if num is None:
-            return "—"
-        fecha_str = fecha.strftime("%d/%m") if fecha else "?"
-        return f'{int(num)} · {fecha_str}'
+        num_str   = str(int(num)) if num is not None else "—"
+        fecha_str = fecha.strftime("%d/%m") if fecha else "—"
+        return num_str, fecha_str
 
     for r in incumple_rows:
         clave    = escape_html(r.get("CLAVE"))
@@ -151,7 +150,7 @@ def build_rows_html(rows, col_gestion, sec_key):
         horas    = r.get("horas_sin_gestion")
         gestion  = escape_html(r.get(col_gestion))
         display  = escape_html(r.get("estado_display"))
-        rell     = fmt_rellamada(r)
+        rell_num, rell_fecha = fmt_rellamada(r)
         critico_cls = ' class="row-critico"' if horas > 96 else ''
         html += (
             f'<tr{critico_cls} data-horas="{horas}" data-categ="{categ}">'
@@ -160,14 +159,15 @@ def build_rows_html(rows, col_gestion, sec_key):
             f'<td style="font-weight:700;color:#C62828">{horas}h</td>'
             f'<td>{gestion}</td>'
             f'<td>{display}</td>'
-            f'<td style="color:#555;white-space:nowrap">{rell}</td>'
+            f'<td style="text-align:center">{rell_num}</td>'
+            f'<td style="color:#555;white-space:nowrap">{rell_fecha}</td>'
             f'</tr>\n'
         )
 
     if otros_rows:
         html += (
             f'<tr class="toggle-row" data-sec="{sec_key}">'
-            f'<td colspan="6" class="toggle-cell">'
+            f'<td colspan="7" class="toggle-cell">'
             f'▼ Ver {len(otros_rows)} tickets dentro de SLA / excluidos'
             f'</td></tr>\n'
         )
@@ -177,7 +177,7 @@ def build_rows_html(rows, col_gestion, sec_key):
             horas   = r.get("horas_sin_gestion")
             gestion = escape_html(r.get(col_gestion))
             display = escape_html(r.get("estado_display"))
-            rell    = fmt_rellamada(r)
+            rell_num, rell_fecha = fmt_rellamada(r)
             html += (
                 f'<tr class="otros-row-{sec_key}" data-horas="{horas}" data-categ="{categ}" style="display:none">'
                 f'<td><a href="https://tgjira.masmovil.com/browse/{clave}" target="_blank">{clave}</a></td>'
@@ -185,12 +185,13 @@ def build_rows_html(rows, col_gestion, sec_key):
                 f'<td>{horas}h</td>'
                 f'<td>{gestion}</td>'
                 f'<td>{display}</td>'
-                f'<td style="color:#555;white-space:nowrap">{rell}</td>'
+                f'<td style="text-align:center">{rell_num}</td>'
+                f'<td style="color:#555;white-space:nowrap">{rell_fecha}</td>'
                 f'</tr>\n'
             )
 
     if not incumple_rows and not otros_rows:
-        html = '<tr><td colspan="6" style="text-align:center;color:#999;padding:1.5rem">Sin tickets en esta cola hoy</td></tr>\n'
+        html = '<tr><td colspan="7" style="text-align:center;color:#999;padding:1.5rem">Sin tickets en esta cola hoy</td></tr>\n'
 
     return html
 
@@ -272,7 +273,7 @@ def generate_html(results, now):
             f'<thead><tr>'
             f'<th>Ticket</th><th>Subcategoría</th>'
             f'<th>Horas sin gestión</th><th>Última gestión</th><th>Estado</th>'
-            f'<th>Rellamadas</th>'
+            f'<th>Nº Rellamadas</th><th>Fecha últ. rellamada</th>'
             f'</tr></thead>'
             f'<tbody>\n{rows_html}</tbody>'
             f'</table></div>'
@@ -771,18 +772,20 @@ HTML_TEMPLATE = """\
         var sec = this.dataset.sec;
         var tabla = document.getElementById('tabla-' + sec);
         if (!tabla) return;
-        var rows = [['Ticket','Subcategoría','Horas sin gestión','Última gestión','Estado']];
+        var rows = [['Ticket','Subcategoría','Horas sin gestión','Última gestión','Estado','Nº Rellamadas','Fecha últ. rellamada']];
         tabla.querySelectorAll('tbody tr').forEach(function(row) {{
           if (row.classList.contains('toggle-row')) return;
           if (row.style.display === 'none') return;
           var cells = row.querySelectorAll('td');
-          if (cells.length < 5) return;
+          if (cells.length < 7) return;
           rows.push([
             cells[0].textContent.trim(),
             cells[1].textContent.trim(),
             cells[2].textContent.trim(),
             cells[3].textContent.trim(),
-            cells[4].textContent.trim()
+            cells[4].textContent.trim(),
+            cells[5].textContent.trim(),
+            cells[6].textContent.trim()
           ]);
         }});
         var csv = rows.map(function(r) {{
