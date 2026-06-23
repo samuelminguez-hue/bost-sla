@@ -205,17 +205,17 @@
 <section class="hero">
   <div>
     <div class="hero-title">SLA Global</div>
-    <div class="hero-sub">Martes, 23/06/2026 &middot; Datos a las 08:30h &middot; Generado 09:00h</div>
+    <div class="hero-sub">Martes, 23/06/2026 &middot; Datos a las 08:30h &middot; Generado 11:33h</div>
   </div>
   <div class="hero-pill">⚠️ ATENCIÓN</div>
 </section>
 
 <!-- KPI GLOBAL -->
 <div class="kpi-global-block">
-  <div class="kpi-global-number">76.9%</div>
+  <div class="kpi-global-number">74.6%</div>
   <div>
     <div class="kpi-global-label">Cumplimiento global SLA</div>
-    <div class="kpi-global-detail">1390 cumplen · <strong style="color:#C62828">418 incumplen</strong> · 1808 total computables</div>
+    <div class="kpi-global-detail">1348 cumplen · <strong style="color:#C62828">460 incumplen</strong> · 1808 total computables</div>
   </div>
 </div>
 
@@ -227,11 +227,11 @@
             <span class="kpi-card-label">STFIJO</span>
             <span class="kpi-card-sla">SLA 24h</span>
           </div>
-          <div class="kpi-card-pct" style="color:#C62828">79.1%</div>
+          <div class="kpi-card-pct" style="color:#C62828">76.1%</div>
           <div class="kpi-bar-bg">
-            <div class="kpi-bar-fill" style="background:#C62828;width:79.1%"></div>
+            <div class="kpi-bar-fill" style="background:#C62828;width:76.1%"></div>
           </div>
-          <div class="kpi-card-detail">272 incumplen · 1302 computables</div>
+          <div class="kpi-card-detail">311 incumplen · 1302 computables</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-card-header">
@@ -249,22 +249,22 @@
             <span class="kpi-card-label">TV</span>
             <span class="kpi-card-sla">SLA 24h</span>
           </div>
-          <div class="kpi-card-pct" style="color:#2E7D32">83.4%</div>
+          <div class="kpi-card-pct" style="color:#2E7D32">82.7%</div>
           <div class="kpi-bar-bg">
-            <div class="kpi-bar-fill" style="background:#2E7D32;width:83.4%"></div>
+            <div class="kpi-bar-fill" style="background:#2E7D32;width:82.7%"></div>
           </div>
-          <div class="kpi-card-detail">51 incumplen · 307 computables</div>
+          <div class="kpi-card-detail">53 incumplen · 307 computables</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-card-header">
             <span class="kpi-card-label">TV Logística</span>
             <span class="kpi-card-sla">SLA 24h</span>
           </div>
-          <div class="kpi-card-pct" style="color:#C62828">54.4%</div>
+          <div class="kpi-card-pct" style="color:#C62828">53.3%</div>
           <div class="kpi-bar-bg">
-            <div class="kpi-bar-fill" style="background:#C62828;width:54.4%"></div>
+            <div class="kpi-bar-fill" style="background:#C62828;width:53.3%"></div>
           </div>
-          <div class="kpi-card-detail">41 incumplen · 90 computables</div>
+          <div class="kpi-card-detail">42 incumplen · 90 computables</div>
         </div>
 </div>
 
@@ -275,8 +275,9 @@
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <!-- Producto -->
       <div style="display:flex;gap:5px">
-        <button class="product-tab active" disabled title="Producto activo">Fijo</button>
-        <button class="product-tab" disabled title="Próximamente">TV</button>
+        <button class="product-tab active" data-product="all">Todo</button>
+        <button class="product-tab" data-product="fijo">Fijo</button>
+        <button class="product-tab" data-product="tv">TV</button>
       </div>
       <div style="width:1px;height:20px;background:var(--mo-border)"></div>
       <!-- Periodo -->
@@ -304,7 +305,7 @@
     <div style="width:1px;height:18px;background:var(--mo-border);margin:0 2px"></div>
     <div id="cola-controls" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
       <span style="font-size:0.7rem;color:var(--mo-muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em">Colas:</span>
-      <button class="cola-toggle-btn" data-cola="fijo"         style="border-color:#FF5900;color:#FF5900">STFIJO&middot;SGI&middot;GIOR</button>
+      <button class="cola-toggle-btn" data-cola="fijo"         style="border-color:#FF5900;color:#FF5900">Fijo</button>
       <button class="cola-toggle-btn" data-cola="logistica"    style="border-color:#9c27b0;color:#9c27b0">Log&iacute;stica</button>
       <button class="cola-toggle-btn" data-cola="tv"           style="border-color:#1565C0;color:#1565C0">TV</button>
       <button class="cola-toggle-btn" data-cola="tv_logistica" style="border-color:#00796B;color:#00796B">TV Log&iacute;stica</button>
@@ -321,7 +322,7 @@
 <div class="section-block">
   <div class="section-title">Análisis del día</div>
   <ul class="analisis-list" style="margin-top:12px">
-    <li>La cola con mayor incumplimiento hoy es <strong>Logística</strong> (54 de 109 tickets, 50.5% cumplimiento).</li><li><strong>3 tickets en STFIJO-ZL superan las 96h sin gestión</strong>: <a href="https://tgjira.masmovil.com/browse/ATC-8561120" style="color:#FF5900;text-decoration:none">ATC-8561120</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8554486" style="color:#FF5900;text-decoration:none">ATC-8554486</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8568153" style="color:#FF5900;text-decoration:none">ATC-8568153</a>.</li><li>TV lidera con 83.4% de cumplimiento.</li>
+    <li>La cola con mayor incumplimiento hoy es <strong>Logística</strong> (54 de 109 tickets, 50.5% cumplimiento).</li><li><strong>7 tickets en STFIJO-ZL superan las 96h sin gestión</strong>: <a href="https://tgjira.masmovil.com/browse/ATC-8561120" style="color:#FF5900;text-decoration:none">ATC-8561120</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8554486" style="color:#FF5900;text-decoration:none">ATC-8554486</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8568153" style="color:#FF5900;text-decoration:none">ATC-8568153</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8561449" style="color:#FF5900;text-decoration:none">ATC-8561449</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8576255" style="color:#FF5900;text-decoration:none">ATC-8576255</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8577209" style="color:#FF5900;text-decoration:none">ATC-8577209</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8578948" style="color:#FF5900;text-decoration:none">ATC-8578948</a>.</li><li>TV lidera con 82.7% de cumplimiento.</li>
   </ul>
 </div>
 
@@ -336,7 +337,7 @@
       <rect x="36" y="24" width="16" height="16" fill="#FF5900"/>
       <circle cx="104" cy="34" r="28" fill="none" stroke="#fff" stroke-width="10"/>
     </svg>
-    <span style="margin-left:10px">Generado automáticamente · BOST MasOrange · 23/06/2026 09:00h</span>
+    <span style="margin-left:10px">Generado automáticamente · BOST MasOrange · 23/06/2026 11:33h</span>
   </div>
   <div class="mo-footer-links">
     <a href="fijo.html">Informe Fijo + TV</a>
@@ -361,9 +362,9 @@
     applyTheme(isDark);
     btn.addEventListener('click', function() { isDark = !isDark; applyTheme(isDark); });
   })();
-  const CHART_DATA = [{"fecha": "2026-06-10", "fijo": {"pct": 71.2, "incumple": 348}, "logistica": {"pct": 100.0, "incumple": 0}, "tv": {"pct": 100.0, "incumple": 0}, "tv_logistica": {"pct": 9.9, "incumple": 172}}, {"fecha": "2026-06-11", "fijo": {"pct": 66.4, "incumple": 413}, "logistica": {"pct": 100.0, "incumple": 0}, "tv": {"pct": 100.0, "incumple": 0}, "tv_logistica": {"pct": 9.0, "incumple": 182}}, {"fecha": "2026-06-12", "fijo": {"pct": 83.3, "incumple": 190}, "logistica": {"pct": 100.0, "incumple": 0}, "tv": {"pct": 100.0, "incumple": 0}, "tv_logistica": {"pct": 10.9, "incumple": 212}}, {"fecha": "2026-06-15", "fijo": {"pct": 73.1, "incumple": 235}, "logistica": {"pct": 100.0, "incumple": 0}, "tv": {"pct": 100.0, "incumple": 0}, "tv_logistica": {"pct": 0.8, "incumple": 240}}, {"fecha": "2026-06-16", "fijo": {"pct": 91.0, "incumple": 89}, "logistica": {"pct": 11.6, "incumple": 228}}, {"fecha": "2026-06-17", "fijo": {"pct": 80.3, "incumple": 211}, "logistica": {"pct": 37.5, "incumple": 167}}, {"fecha": "2026-06-18", "fijo": {"pct": 85.7, "incumple": 157}, "logistica": {"pct": 37.2, "incumple": 186}}, {"fecha": "2026-06-19", "fijo": {"pct": 79.5, "incumple": 228}, "logistica": {"pct": 57.0, "incumple": 46}}, {"fecha": "2026-06-22", "fijo": {"pct": 38.0, "incumple": 718}, "logistica": {"pct": 12.8, "incumple": 82}}, {"fecha": "2026-06-23", "fijo": {"pct": 79.1, "incumple": 272}, "logistica": {"pct": 50.5, "incumple": 54}, "tv": {"pct": 83.4, "incumple": 51}, "tv_logistica": {"pct": 54.4, "incumple": 41}}];
+  const CHART_DATA = [{"fecha": "2026-06-10", "fijo": {"pct": 71.2, "incumple": 348}, "logistica": {"pct": 9.9, "incumple": 172}}, {"fecha": "2026-06-11", "fijo": {"pct": 66.4, "incumple": 413}, "logistica": {"pct": 9.0, "incumple": 182}}, {"fecha": "2026-06-12", "fijo": {"pct": 83.3, "incumple": 190}, "logistica": {"pct": 10.9, "incumple": 212}}, {"fecha": "2026-06-15", "fijo": {"pct": 73.1, "incumple": 235}, "logistica": {"pct": 0.8, "incumple": 240}}, {"fecha": "2026-06-16", "fijo": {"pct": 91.0, "incumple": 89}}, {"fecha": "2026-06-17", "fijo": {"pct": 80.3, "incumple": 211}}, {"fecha": "2026-06-18", "fijo": {"pct": 85.7, "incumple": 157}}, {"fecha": "2026-06-19", "fijo": {"pct": 79.5, "incumple": 228}}, {"fecha": "2026-06-22", "fijo": {"pct": 38.0, "incumple": 718}}, {"fecha": "2026-06-23", "fijo": {"pct": 79.1, "incumple": 272}, "logistica": {"pct": 50.5, "incumple": 54}, "tv": {"pct": 83.4, "incumple": 51}, "tv_logistica": {"pct": 54.4, "incumple": 41}}];
 const COLA_COLORS = {fijo:'#FF5900',logistica:'#9c27b0',tv:'#1565C0',tv_logistica:'#00796B'};
-const COLA_LABELS = {fijo:'STFIJO·SGI·GIOR',logistica:'Logística',tv:'TV',tv_logistica:'TV Logística'};
+const COLA_LABELS = {fijo:'Fijo',logistica:'Logística',tv:'TV',tv_logistica:'TV Logística'};
 const COLA_KEYS   = ['fijo','logistica','tv','tv_logistica'];
 var chartGranularity = 'days';
 var visibleColas = {fijo:true,logistica:true,tv:true,tv_logistica:true};
@@ -577,6 +578,30 @@ document.querySelectorAll('.cola-toggle-btn').forEach(function(btn){
       this.style.color='#ccc';
       this.classList.add('off');
     }
+    drawChart();
+  });
+});
+
+// Filtro por producto (Todo / Fijo / TV)
+var PRODUCT_COLA_MAP = {fijo:['fijo','logistica'], tv:['tv','tv_logistica']};
+document.querySelectorAll('.product-tab').forEach(function(btn){
+  btn.addEventListener('click',function(){
+    var product = this.dataset.product;
+    document.querySelectorAll('.product-tab').forEach(function(b){b.classList.remove('active');});
+    this.classList.add('active');
+    if(product === 'all'){
+      COLA_KEYS.forEach(function(k){ visibleColas[k]=true; });
+    } else {
+      var show = PRODUCT_COLA_MAP[product] || [];
+      COLA_KEYS.forEach(function(k){ visibleColas[k] = show.indexOf(k) !== -1; });
+    }
+    // Sincronizar cola-toggle-btns
+    document.querySelectorAll('.cola-toggle-btn').forEach(function(b){
+      var k=b.dataset.cola, on=visibleColas[k];
+      b.style.borderColor = on ? COLA_COLORS[k] : '#ccc';
+      b.style.color       = on ? COLA_COLORS[k] : '#ccc';
+      on ? b.classList.remove('off') : b.classList.add('off');
+    });
     drawChart();
   });
 });
