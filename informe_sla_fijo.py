@@ -673,6 +673,12 @@ HTML_TEMPLATE = """\
 
   <!-- TABLAS -->
   <main>
+    <div style="display:flex;align-items:center;gap:8px;padding:12px var(--mo-margin) 0;flex-wrap:wrap">
+      <span style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-muted)">Producto:</span>
+      <button class="prod-filter-btn prod-active" data-prod="all"  style="padding:4px 12px;border-radius:4px;border:1.5px solid var(--border-subtle);background:var(--bg-card);color:var(--text-main);cursor:pointer;font-size:0.8rem;font-weight:600">Todo</button>
+      <button class="prod-filter-btn"              data-prod="fijo" style="padding:4px 12px;border-radius:4px;border:1.5px solid #FF5900;background:var(--bg-card);color:#FF5900;cursor:pointer;font-size:0.8rem;font-weight:600">Fijo</button>
+      <button class="prod-filter-btn"              data-prod="tv"   style="padding:4px 12px;border-radius:4px;border:1.5px solid #1565C0;background:var(--bg-card);color:#1565C0;cursor:pointer;font-size:0.8rem;font-weight:600">TV</button>
+    </div>
     {sections}
     <div style="height:1rem"></div>
   </main>
@@ -827,6 +833,32 @@ HTML_TEMPLATE = """\
       btn.addEventListener('click', function() {{
         isDark = !isDark;
         applyTheme(isDark);
+      }});
+    }})();
+
+    // ── Filtro de producto (Todo / Fijo / TV) ──────────────────────
+    (function() {{
+      var PROD_SECS = {{
+        fijo: ['sec-fijo','sec-logistica'],
+        tv:   ['sec-tv','sec-tv_logistica']
+      }};
+      document.querySelectorAll('.prod-filter-btn').forEach(function(btn) {{
+        btn.addEventListener('click', function() {{
+          var prod = this.dataset.prod;
+          document.querySelectorAll('.prod-filter-btn').forEach(function(b) {{
+            b.classList.remove('prod-active');
+            b.style.background = '';
+          }});
+          this.classList.add('prod-active');
+          this.style.background = prod === 'all' ? 'var(--bg-strip)' : '';
+          document.querySelectorAll('.tabla-seccion').forEach(function(sec) {{
+            if (prod === 'all') {{
+              sec.style.display = '';
+            }} else {{
+              sec.style.display = (PROD_SECS[prod] || []).indexOf(sec.id) !== -1 ? '' : 'none';
+            }}
+          }});
+        }});
       }});
     }})();
   </script>
@@ -1324,6 +1356,15 @@ def generar_resumen_ia(kpis, pct_global, results, now):
 
     api_key = os.environ.get("CLAUDE_API_KEY", "")
     if not api_key:
+        try:
+            import re as _re_api
+            sh_path = pathlib.Path.home() / ".claude" / "jira-personal.sh"
+            m = _re_api.search(r'CLAUDE_API_KEY="([^"]+)"', sh_path.read_text(encoding="utf-8"))
+            if m:
+                api_key = m.group(1)
+        except Exception:
+            pass
+    if not api_key:
         return ""
 
     # Datos para el prompt
@@ -1331,7 +1372,7 @@ def generar_resumen_ia(kpis, pct_global, results, now):
     for k in kpis:
         lineas.append(f"  {k['label']}: {k['pct']}% ({k['n_incumple']} INCUMPLE de {k['n_comp']} computables, SLA {k['sla']})")
 
-    criticos_96 = [r for r in results.get("stfijo", [])
+    criticos_96 = [r for r in results.get("fijo", [])
                    if r.get("estado_sla") == "INCUMPLE" and (r.get("horas_sin_gestion") or 0) > 96]
 
     prompt = (
@@ -1390,12 +1431,18 @@ def extraer_kpis_de_html(html_path):
     if len(pcts) < 2 or len(incumples) < 2:
         return None
 
-    keys = [s["key"] for s in DISPLAY_SECCIONES]
-    n = min(len(pcts), len(keys))
-    return {
-        keys[i]: {"pct": float(pcts[i]), "incumple": int(incumples[i])}
-        for i in range(n)
-    }
+    # Detectar formato: nuevo (Fijo+TV, desde 22/06/2026) tiene id="sec-tv"
+    # Formato antiguo: 4 secciones posicionales stfijo(0)/sgi(1)/gior(2)/logistica(3)
+    if 'id="sec-tv"' in text:
+        keys = [s["key"] for s in DISPLAY_SECCIONES]
+        n = min(len(pcts), len(keys))
+        return {keys[i]: {"pct": float(pcts[i]), "incumple": int(incumples[i])} for i in range(n)}
+    else:
+        # Antiguo: solo extraer fijo (pos 0) y logistica (pos 3 si existe)
+        result = {"fijo": {"pct": float(pcts[0]), "incumple": int(incumples[0])}}
+        if len(pcts) >= 4:
+            result["logistica"] = {"pct": float(pcts[3]), "incumple": int(incumples[3])}
+        return result
 
 
 def cargar_historico(dias=14):
@@ -1671,7 +1718,7 @@ def generar_global_html(results, now, historico):
     chart_js = (
         "const CHART_DATA = " + historico_js + ";\n"
         "const COLA_COLORS = {fijo:'#FF5900',logistica:'#9c27b0',tv:'#1565C0',tv_logistica:'#00796B'};\n"
-        "const COLA_LABELS = {fijo:'STFIJO·SGI·GIOR',logistica:'Logística',tv:'TV',tv_logistica:'TV Logística'};\n"
+        "const COLA_LABELS = {fijo:'Fijo',logistica:'Logística',tv:'TV',tv_logistica:'TV Logística'};\n"
         "const COLA_KEYS   = ['fijo','logistica','tv','tv_logistica'];\n"
         "var chartGranularity = 'days';\n"
         "var visibleColas = {fijo:true,logistica:true,tv:true,tv_logistica:true};\n"
@@ -1885,6 +1932,30 @@ def generar_global_html(results, now, historico):
         "      this.style.color='#ccc';\n"
         "      this.classList.add('off');\n"
         "    }\n"
+        "    drawChart();\n"
+        "  });\n"
+        "});\n"
+        "\n"
+        "// Filtro por producto (Todo / Fijo / TV)\n"
+        "var PRODUCT_COLA_MAP = {fijo:['fijo','logistica'], tv:['tv','tv_logistica']};\n"
+        "document.querySelectorAll('.product-tab').forEach(function(btn){\n"
+        "  btn.addEventListener('click',function(){\n"
+        "    var product = this.dataset.product;\n"
+        "    document.querySelectorAll('.product-tab').forEach(function(b){b.classList.remove('active');});\n"
+        "    this.classList.add('active');\n"
+        "    if(product === 'all'){\n"
+        "      COLA_KEYS.forEach(function(k){ visibleColas[k]=true; });\n"
+        "    } else {\n"
+        "      var show = PRODUCT_COLA_MAP[product] || [];\n"
+        "      COLA_KEYS.forEach(function(k){ visibleColas[k] = show.indexOf(k) !== -1; });\n"
+        "    }\n"
+        "    // Sincronizar cola-toggle-btns\n"
+        "    document.querySelectorAll('.cola-toggle-btn').forEach(function(b){\n"
+        "      var k=b.dataset.cola, on=visibleColas[k];\n"
+        "      b.style.borderColor = on ? COLA_COLORS[k] : '#ccc';\n"
+        "      b.style.color       = on ? COLA_COLORS[k] : '#ccc';\n"
+        "      on ? b.classList.remove('off') : b.classList.add('off');\n"
+        "    });\n"
         "    drawChart();\n"
         "  });\n"
         "});\n"
@@ -2129,8 +2200,9 @@ def generar_global_html(results, now, historico):
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
       <!-- Producto -->
       <div style="display:flex;gap:5px">
-        <button class="product-tab active" disabled title="Producto activo">Fijo</button>
-        <button class="product-tab" disabled title="Próximamente">TV</button>
+        <button class="product-tab active" data-product="all">Todo</button>
+        <button class="product-tab" data-product="fijo">Fijo</button>
+        <button class="product-tab" data-product="tv">TV</button>
       </div>
       <div style="width:1px;height:20px;background:var(--mo-border)"></div>
       <!-- Periodo -->
@@ -2158,7 +2230,7 @@ def generar_global_html(results, now, historico):
     <div style="width:1px;height:18px;background:var(--mo-border);margin:0 2px"></div>
     <div id="cola-controls" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
       <span style="font-size:0.7rem;color:var(--mo-muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em">Colas:</span>
-      <button class="cola-toggle-btn" data-cola="fijo"         style="border-color:#FF5900;color:#FF5900">STFIJO&middot;SGI&middot;GIOR</button>
+      <button class="cola-toggle-btn" data-cola="fijo"         style="border-color:#FF5900;color:#FF5900">Fijo</button>
       <button class="cola-toggle-btn" data-cola="logistica"    style="border-color:#9c27b0;color:#9c27b0">Log&iacute;stica</button>
       <button class="cola-toggle-btn" data-cola="tv"           style="border-color:#1565C0;color:#1565C0">TV</button>
       <button class="cola-toggle-btn" data-cola="tv_logistica" style="border-color:#00796B;color:#00796B">TV Log&iacute;stica</button>
