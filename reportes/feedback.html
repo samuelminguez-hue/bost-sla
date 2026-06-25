@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BOST · Reportar incidencia en dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --mo-orange:#FF5900; --mo-black:#000; --mo-white:#fff;
+      --mo-gray:#F2F2F2; --mo-text:#111; --mo-muted:#666;
+      --mo-border:#e0e0e0; --nav-h:56px;
+    }
+    [data-theme="dark"] {
+      --mo-gray:#1a1a1a; --mo-text:#f0f0f0; --mo-muted:#aaa;
+      --mo-border:#333; --mo-white:#111;
+    }
+    * { box-sizing:border-box; margin:0; padding:0; }
+    body { font-family:'Outfit',Arial,Helvetica,sans-serif; background:var(--mo-gray); color:var(--mo-text); min-height:100vh; }
+
+    /* NAV */
+    .mo-nav {
+      position:sticky; top:0; z-index:100;
+      background:rgba(0,0,0,0.92); backdrop-filter:blur(12px);
+      height:var(--nav-h); display:flex; align-items:center;
+      justify-content:space-between; padding:0 24px; gap:16px;
+    }
+    .mo-nav-left { display:flex; align-items:center; gap:20px; }
+    .mo-nav-brand { color:#fff; font-weight:700; font-size:0.9rem; white-space:nowrap; }
+    .mo-nav-links { list-style:none; display:flex; gap:4px; }
+    .mo-nav-links li a {
+      color:#ccc; text-decoration:none; font-size:0.82rem; font-weight:600;
+      padding:6px 14px; border-radius:4px; transition:background .15s,color .15s;
+    }
+    .mo-nav-links li a:hover { background:rgba(255,255,255,.1); color:#fff; }
+    .mo-nav-links li a.active { background:var(--mo-orange); color:#fff; }
+    .mo-logo { width:64px; height:auto; color:#fff; flex-shrink:0; }
+    .mo-theme-btn {
+      background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.2);
+      color:#fff; font-size:0.78rem; border-radius:4px; padding:4px 10px;
+      cursor:pointer; display:flex; align-items:center; gap:5px;
+    }
+
+    /* HERO */
+    .hero { background:#000; padding:28px 24px 24px; }
+    .hero-title { color:#fff; font-size:1.6rem; font-weight:700; }
+    .hero-sub { color:#aaa; font-size:0.85rem; margin-top:6px; max-width:560px; line-height:1.5; }
+
+    /* FORM CARD */
+    .form-wrap {
+      max-width:640px; margin:28px auto; padding:0 20px 40px;
+    }
+    .form-card {
+      background:var(--mo-white); border-radius:10px;
+      padding:28px 28px 24px; box-shadow:0 2px 8px rgba(0,0,0,.08);
+    }
+    .form-card h2 { font-size:1rem; font-weight:700; margin-bottom:4px; }
+    .form-card .form-intro { font-size:0.82rem; color:var(--mo-muted); margin-bottom:24px; line-height:1.5; }
+
+    .field { margin-bottom:20px; }
+    .field label {
+      display:block; font-size:0.8rem; font-weight:700;
+      text-transform:uppercase; letter-spacing:.04em;
+      color:var(--mo-muted); margin-bottom:6px;
+    }
+    .field label .req { color:var(--mo-orange); margin-left:2px; }
+    .field input, .field select, .field textarea {
+      width:100%; padding:10px 12px; font-size:0.88rem;
+      border:1.5px solid var(--mo-border); border-radius:6px;
+      background:var(--mo-white); color:var(--mo-text);
+      font-family:'Outfit',Arial,Helvetica,sans-serif;
+      transition:border-color .15s;
+    }
+    .field input:focus, .field select:focus, .field textarea:focus {
+      outline:none; border-color:var(--mo-orange);
+    }
+    .field input.error, .field select.error, .field textarea.error {
+      border-color:#C62828;
+    }
+    .field .hint { font-size:0.73rem; color:var(--mo-muted); margin-top:4px; }
+    .field .err-msg { font-size:0.73rem; color:#C62828; margin-top:4px; display:none; }
+    .field.has-error .err-msg { display:block; }
+
+    .char-counter {
+      text-align:right; font-size:0.72rem; color:var(--mo-muted); margin-top:4px;
+      transition:color .15s;
+    }
+    .char-counter.near { color:#E65100; }
+    .char-counter.at   { color:#C62828; font-weight:700; }
+
+    .btn-submit {
+      width:100%; padding:12px; background:var(--mo-orange); color:#fff;
+      border:none; border-radius:6px; font-size:0.9rem; font-weight:700;
+      cursor:pointer; font-family:'Outfit',Arial,Helvetica,sans-serif;
+      transition:opacity .15s, transform .1s;
+      margin-top:8px;
+    }
+    .btn-submit:hover { opacity:.9; }
+    .btn-submit:active { transform:scale(.98); }
+    .btn-submit:disabled { opacity:.45; cursor:not-allowed; }
+
+    /* AVISO PRIVACIDAD */
+    .privacy-note {
+      font-size:0.72rem; color:var(--mo-muted); text-align:center;
+      margin-top:14px; line-height:1.5;
+    }
+
+    /* REGLAS visibles */
+    .rules-box {
+      background:var(--mo-gray); border-radius:6px;
+      padding:12px 14px; margin-bottom:22px;
+      border-left:3px solid var(--mo-orange);
+    }
+    .rules-box p { font-size:0.78rem; color:var(--mo-muted); line-height:1.6; }
+    .rules-box strong { color:var(--mo-text); }
+
+    /* ESTADO ENVIADO */
+    .success-card {
+      background:var(--mo-white); border-radius:10px;
+      padding:40px 28px; text-align:center;
+      box-shadow:0 2px 8px rgba(0,0,0,.08); display:none;
+    }
+    .success-icon { font-size:2.5rem; margin-bottom:12px; }
+    .success-card h2 { font-size:1.1rem; font-weight:700; margin-bottom:8px; }
+    .success-card p { font-size:0.85rem; color:var(--mo-muted); line-height:1.5; }
+    .btn-new { margin-top:20px; background:none; border:1.5px solid var(--mo-orange);
+               color:var(--mo-orange); border-radius:6px; padding:8px 20px;
+               font-size:0.82rem; font-weight:700; cursor:pointer;
+               font-family:'Outfit',Arial,Helvetica,sans-serif; }
+    .btn-new:hover { background:var(--mo-orange); color:#fff; }
+
+    /* FOOTER */
+    .mo-footer {
+      background:#000; color:#aaa; font-size:0.75rem;
+      padding:16px 24px; margin-top:0;
+      display:flex; align-items:center; justify-content:space-between; gap:12px;
+    }
+
+    @media(max-width:600px) {
+      .form-wrap { padding:0 12px 32px; }
+      .form-card { padding:20px 16px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="mo-nav">
+  <div class="mo-nav-left">
+    <span class="mo-nav-brand">BOST · SLA Dashboard</span>
+    <ul class="mo-nav-links">
+      <li><a href="global.html">Global</a></li>
+      <li><a href="fijo.html">Fijo + TV</a></li>
+      <li><a href="opits.html">OPITs</a></li>
+      <li><a href="feedback.html" class="active">Feedback</a></li>
+    </ul>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <button class="mo-theme-btn" id="mo-theme-btn">
+      <span id="mo-theme-icon">☽</span>
+      <span id="mo-theme-label">Modo oscuro</span>
+    </button>
+    <svg class="mo-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 68" role="img" aria-label="MasOrange">
+      <rect x="4"  y="24" width="16" height="16" fill="#FF5900"/>
+      <rect x="20" y="8"  width="16" height="16" fill="#FF5900"/>
+      <rect x="20" y="24" width="16" height="16" fill="#FF5900"/>
+      <rect x="20" y="40" width="16" height="16" fill="#FF5900"/>
+      <rect x="36" y="24" width="16" height="16" fill="#FF5900"/>
+      <circle cx="104" cy="34" r="28" fill="none" stroke="#fff" stroke-width="10"/>
+    </svg>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-title">Reportar incidencia en el dashboard</div>
+  <div class="hero-sub">¿Ves algo que no cuadra en el informe SLA? Usa este formulario para notificarnos. Revisaremos tu reporte y te contactaremos si necesitamos más información.</div>
+</section>
+
+<!-- FORM -->
+<div class="form-wrap">
+
+  <!-- FORMULARIO -->
+  <div class="form-card" id="form-card">
+    <h2>Nueva incidencia</h2>
+    <p class="form-intro">Rellena los tres campos. Solo se aceptan incidencias vinculadas a un ticket ATC real.</p>
+
+    <div class="rules-box">
+      <p>
+        <strong>¿Qué reportar aquí?</strong> Errores en datos del dashboard: ticket que no aparece,
+        horas o fechas incorrectas, estado SLA que no corresponde.<br>
+        <strong>¿Qué NO reportar?</strong> Dudas operativas, solicitudes de gestión, incidencias de Jira.
+        Para eso, usa los canales habituales.
+      </p>
+    </div>
+
+    <form id="feedback-form" novalidate>
+
+      <div class="field" id="f-atc">
+        <label for="atc">Ticket ATC <span class="req">*</span></label>
+        <input type="text" id="atc" name="atc" placeholder="ATC-1234567"
+               maxlength="12" autocomplete="off" spellcheck="false">
+        <div class="hint">Formato: ATC- seguido de 7 dígitos</div>
+        <div class="err-msg" id="err-atc">Introduce un ticket válido (ej: ATC-8513205)</div>
+      </div>
+
+      <div class="field" id="f-tipo">
+        <label for="tipo">Tipo de incidencia <span class="req">*</span></label>
+        <select id="tipo" name="tipo">
+          <option value="">— Selecciona —</option>
+          <option value="ticket_no_aparece">El ticket no aparece en el informe</option>
+          <option value="horas_incorrectas">Las horas sin gestión son incorrectas</option>
+          <option value="sla_incorrecto">El estado SLA (cumple/incumple) no corresponde</option>
+          <option value="fecha_incorrecta">La fecha de última gestión es incorrecta</option>
+          <option value="otro">Otro dato incorrecto</option>
+        </select>
+        <div class="err-msg" id="err-tipo">Selecciona el tipo de incidencia</div>
+      </div>
+
+      <div class="field" id="f-comentario">
+        <label for="comentario">Comentario <span class="req">*</span></label>
+        <textarea id="comentario" name="comentario" rows="4"
+                  maxlength="280"
+                  placeholder="Describe brevemente qué dato ves incorrecto y qué debería mostrar. Ej: «El ticket lleva 3 días en ESCALADA EXTERNO y aparece como incumple, pero fue marcado ilocalizable ayer»."></textarea>
+        <div class="char-counter" id="char-count">0 / 280</div>
+        <div class="err-msg" id="err-comentario">El comentario es obligatorio (mín. 20 caracteres)</div>
+      </div>
+
+      <button type="submit" class="btn-submit" id="btn-submit">Enviar reporte</button>
+    </form>
+
+    <p class="privacy-note">
+      Tu reporte se enviará al equipo BOST · MasOrange. No incluyas datos personales de clientes.
+    </p>
+  </div>
+
+  <!-- CONFIRMACIÓN -->
+  <div class="success-card" id="success-card">
+    <div class="success-icon">✅</div>
+    <h2>Reporte enviado</h2>
+    <p>Hemos recibido tu incidencia sobre <strong id="success-atc"></strong>.<br>
+       El equipo BOST lo revisará y te contactará si necesitamos más información.</p>
+    <button class="btn-new" onclick="resetForm()">Reportar otra incidencia</button>
+  </div>
+
+</div>
+
+<!-- FOOTER -->
+<footer class="mo-footer">
+  <span>BOST MasOrange &middot; Dashboard SLA</span>
+  <div style="display:flex;gap:16px">
+    <a href="global.html" style="color:#FF5900;text-decoration:none">← Volver al dashboard</a>
+  </div>
+</footer>
+
+<script>
+  /* ── TEMA ─────────────────────────────────────────── */
+  (function() {
+    var html = document.documentElement;
+    var btn  = document.getElementById('mo-theme-btn');
+    var icon = document.getElementById('mo-theme-icon');
+    var lbl  = document.getElementById('mo-theme-label');
+    var stored = localStorage.getItem('mo-theme');
+    var dark = stored ? stored === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    function apply(d) {
+      html.setAttribute('data-theme', d ? 'dark' : 'light');
+      icon.textContent = d ? '☀' : '☽';
+      lbl.textContent  = d ? 'Modo claro' : 'Modo oscuro';
+      localStorage.setItem('mo-theme', d ? 'dark' : 'light');
+    }
+    apply(dark);
+    btn.addEventListener('click', function() { dark = !dark; apply(dark); });
+  })();
+
+  /* ── VALIDACIÓN ATC ───────────────────────────────── */
+  var ATC_RE = /^ATC-\d{7}$/;
+
+  function setError(fieldId, errId, show) {
+    var f = document.getElementById(fieldId);
+    var e = document.getElementById(errId);
+    if (show) { f.classList.add('has-error');  document.getElementById(errId.replace('err-','f-')).classList.add('has-error'); }
+    else       { f.classList.remove('has-error'); document.getElementById(errId.replace('err-','f-')).classList.remove('has-error'); }
+    return show;
+  }
+
+  /* auto-mayúsculas y guion en ATC */
+  document.getElementById('atc').addEventListener('input', function() {
+    var v = this.value.toUpperCase().replace(/[^ATC\-0-9]/g, '');
+    this.value = v;
+    if (v.length > 0) setError('atc', 'err-atc', !ATC_RE.test(v));
+  });
+
+  /* contador de caracteres */
+  var comentario = document.getElementById('comentario');
+  var counter    = document.getElementById('char-count');
+  comentario.addEventListener('input', function() {
+    var n = this.value.length;
+    counter.textContent = n + ' / 280';
+    counter.className = 'char-counter' + (n >= 280 ? ' at' : n >= 240 ? ' near' : '');
+  });
+
+  /* ── SUBMIT ───────────────────────────────────────── */
+  document.getElementById('feedback-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var atc  = document.getElementById('atc').value.trim();
+    var tipo = document.getElementById('tipo').value;
+    var com  = comentario.value.trim();
+    var ok   = true;
+
+    if (!ATC_RE.test(atc))   { setError('atc','err-atc',true);  ok = false; }
+    else                      { setError('atc','err-atc',false); }
+    if (!tipo)                { setError('tipo','err-tipo',true);  ok = false; }
+    else                      { setError('tipo','err-tipo',false); }
+    if (com.length < 20)      { setError('comentario','err-comentario',true);  ok = false; }
+    else                      { setError('comentario','err-comentario',false); }
+
+    if (!ok) return;
+
+    /* Construir asunto y cuerpo del correo */
+    var tipoLabel = document.getElementById('tipo').options[document.getElementById('tipo').selectedIndex].text;
+    var asunto    = encodeURIComponent('[FEEDBACK SLA] ' + atc + ' — ' + tipoLabel);
+    var cuerpo    = encodeURIComponent(
+      'Ticket ATC: ' + atc + '\r\n' +
+      'Tipo: ' + tipoLabel + '\r\n\r\n' +
+      'Comentario:\r\n' + com + '\r\n\r\n' +
+      '---\r\nEnviado desde dashboard BOST SLA'
+    );
+
+    /* Abrir cliente de correo */
+    var mailto = 'mailto:samuel.minguez@masorange.es?subject=' + asunto + '&body=' + cuerpo;
+    window.location.href = mailto;
+
+    /* Mostrar confirmación */
+    document.getElementById('success-atc').textContent = atc;
+    document.getElementById('form-card').style.display  = 'none';
+    document.getElementById('success-card').style.display = 'block';
+  });
+
+  function resetForm() {
+    document.getElementById('feedback-form').reset();
+    counter.textContent = '0 / 280';
+    counter.className = 'char-counter';
+    document.getElementById('form-card').style.display  = 'block';
+    document.getElementById('success-card').style.display = 'none';
+  }
+
+  /* ── SETEAR CAMPO DESDE URL ?atc=ATC-XXXXXXX ─────── */
+  (function() {
+    var params = new URLSearchParams(window.location.search);
+    var atc = params.get('atc');
+    if (atc) document.getElementById('atc').value = atc.toUpperCase();
+  })();
+</script>
+
+</body>
+</html>
