@@ -301,6 +301,9 @@
     counter.className = 'char-counter' + (n >= 280 ? ' at' : n >= 240 ? ' near' : '');
   });
 
+  /* ── FORMSPREE ENDPOINT ──────────────────────────── */
+  var FORMSPREE_URL = 'https://formspree.io/f/meebaebe';
+
   /* ── SUBMIT ───────────────────────────────────────── */
   document.getElementById('feedback-form').addEventListener('submit', function(e) {
     e.preventDefault();
@@ -318,24 +321,38 @@
 
     if (!ok) return;
 
-    /* Construir asunto y cuerpo del correo */
     var tipoLabel = document.getElementById('tipo').options[document.getElementById('tipo').selectedIndex].text;
-    var asunto    = encodeURIComponent('[FEEDBACK SLA] ' + atc + ' — ' + tipoLabel);
-    var cuerpo    = encodeURIComponent(
-      'Ticket ATC: ' + atc + '\r\n' +
-      'Tipo: ' + tipoLabel + '\r\n\r\n' +
-      'Comentario:\r\n' + com + '\r\n\r\n' +
-      '---\r\nEnviado desde dashboard BOST SLA'
-    );
+    var btn = document.getElementById('btn-submit');
+    btn.disabled = true;
+    btn.textContent = 'Enviando…';
 
-    /* Abrir cliente de correo */
-    var mailto = 'mailto:samuel.minguez@masorange.es?subject=' + asunto + '&body=' + cuerpo;
-    window.location.href = mailto;
-
-    /* Mostrar confirmación */
-    document.getElementById('success-atc').textContent = atc;
-    document.getElementById('form-card').style.display  = 'none';
-    document.getElementById('success-card').style.display = 'block';
+    fetch(FORMSPREE_URL, {
+      method: 'POST',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        _subject: '[FEEDBACK SLA] ' + atc + ' — ' + tipoLabel,
+        ticket:     atc,
+        tipo:       tipoLabel,
+        comentario: com
+      })
+    })
+    .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
+    .then(function(res) {
+      if (res.ok) {
+        document.getElementById('success-atc').textContent = atc;
+        document.getElementById('form-card').style.display  = 'none';
+        document.getElementById('success-card').style.display = 'block';
+      } else {
+        alert('Error al enviar: ' + (res.data.error || 'inténtalo de nuevo'));
+        btn.disabled = false;
+        btn.textContent = 'Enviar reporte';
+      }
+    })
+    .catch(function() {
+      alert('No se pudo conectar. Comprueba tu conexión.');
+      btn.disabled = false;
+      btn.textContent = 'Enviar reporte';
+    });
   });
 
   function resetForm() {
