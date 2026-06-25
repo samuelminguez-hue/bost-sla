@@ -74,8 +74,9 @@ calcular_inicio_reloj AS (
     CASE
       WHEN NOT sat2_responsable                                                                  THEN NULL
       WHEN MOTIVO_PENDIENTE_CLIENTE_TG = 'CLIENTE ILOCALIZABLE' AND FECHA_REVISION_N2 IS NOT NULL THEN FECHA_REVISION_N2
-      -- INCIDENCIA_TRANSPORTE / DEVUELTO_ALMACEN: reloj desde N2 (SAT2 espera al proveedor logístico)
-      WHEN estado_logistica IN ('INCIDENCIA_TRANSPORTE', 'DEVUELTO_ALMACEN') AND FECHA_REVISION_N2 IS NOT NULL THEN FECHA_REVISION_N2
+      -- INCIDENCIA_TRANSPORTE / DEVUELTO_ALMACEN: reloj desde último intento de contacto (FII) o N2
+      WHEN estado_logistica IN ('INCIDENCIA_TRANSPORTE', 'DEVUELTO_ALMACEN')
+        THEN COALESCE(FECHA_INICIO_ILOCALIZABLE, FECHA_REVISION_N2, FECHA_CREACION)
       -- Caso normal (EQUIPO_ENTREGADO): prioridad FECHA_ULTIMA_LABEL_LOGISTICA → N2 → CREACION
       WHEN FECHA_ULTIMA_LABEL_LOGISTICA IS NOT NULL                                              THEN FECHA_ULTIMA_LABEL_LOGISTICA
       WHEN FECHA_REVISION_N2 IS NOT NULL                                                         THEN FECHA_REVISION_N2
@@ -84,7 +85,9 @@ calcular_inicio_reloj AS (
     CASE
       WHEN NOT sat2_responsable                                                                  THEN 'NO_APLICA'
       WHEN MOTIVO_PENDIENTE_CLIENTE_TG = 'CLIENTE ILOCALIZABLE' AND FECHA_REVISION_N2 IS NOT NULL THEN 'FECHA_REVISION_N2_ILOC'
-      WHEN estado_logistica IN ('INCIDENCIA_TRANSPORTE', 'DEVUELTO_ALMACEN') AND FECHA_REVISION_N2 IS NOT NULL THEN 'FECHA_REVISION_N2_TRANSPORTE'
+      WHEN estado_logistica IN ('INCIDENCIA_TRANSPORTE', 'DEVUELTO_ALMACEN') AND FECHA_INICIO_ILOCALIZABLE IS NOT NULL THEN 'FECHA_INICIO_ILOCALIZABLE_TRANSPORTE'
+      WHEN estado_logistica IN ('INCIDENCIA_TRANSPORTE', 'DEVUELTO_ALMACEN') AND FECHA_REVISION_N2 IS NOT NULL         THEN 'FECHA_REVISION_N2_TRANSPORTE'
+      WHEN estado_logistica IN ('INCIDENCIA_TRANSPORTE', 'DEVUELTO_ALMACEN')                                           THEN 'FECHA_CREACION'
       WHEN FECHA_ULTIMA_LABEL_LOGISTICA IS NOT NULL                                              THEN 'FECHA_ULTIMA_LABEL_LOGISTICA'
       WHEN FECHA_REVISION_N2 IS NOT NULL                                                         THEN 'FECHA_REVISION_N2'
       ELSE                                                                                            'FECHA_CREACION'
