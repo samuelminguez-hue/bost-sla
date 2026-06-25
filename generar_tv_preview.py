@@ -256,6 +256,166 @@ def generate_opits_html(rows_all, now):
 
 
 # ─────────────────────────────────────────────────────────────────
+# SECCIÓN OPITs PARA GLOBAL.HTML
+# Agrupada por OPIT (entidad principal), ordenada por más antiguo primero
+# ─────────────────────────────────────────────────────────────────
+OPIT_GLOBAL_CSS = """
+    /* OPITS SECTION */
+    .opit-section { background:var(--mo-white); border-radius:8px; margin:0 20px 14px; padding:20px 24px; box-shadow:0 1px 4px rgba(0,0,0,.06); }
+    .opit-header { display:flex; align-items:center; gap:12px; margin-bottom:16px; }
+    .opit-header h2 { font-size:1rem; font-weight:700; }
+    .opit-badge { padding:3px 10px; border-radius:12px; font-size:.72rem; font-weight:700; background:#000; color:#fff; }
+    .opit-table { width:100%; border-collapse:collapse; font-size:.82rem; }
+    .opit-table th { background:#000; color:#fff; padding:.6rem .8rem; text-align:left; font-size:.75rem; }
+    .opit-table td { padding:.55rem .8rem; border-bottom:1px solid var(--mo-border); vertical-align:middle; }
+    .opit-table tr.opit-row:hover td { background:rgba(255,89,0,.06); cursor:pointer; }
+    .opit-table a { color:var(--mo-orange); text-decoration:none; }
+    .opit-table a:hover { text-decoration:underline; }
+    .opit-row-critico td { background:rgba(198,40,40,.05) !important; }
+    .opit-row-aviso td { background:rgba(255,160,0,.05) !important; }
+    .opit-tickets-row { display:none; }
+    .opit-tickets-row td { padding:.4rem .8rem .8rem 2.5rem; background:var(--mo-gray) !important; }
+    .opit-tickets-list { display:flex; flex-wrap:wrap; gap:4px 6px; margin-top:4px; }
+    .opit-ticket-chip { font-size:.72rem; padding:2px 8px; border-radius:3px; background:var(--mo-white); border:1px solid var(--mo-border); color:var(--mo-text); text-decoration:none; }
+    .opit-ticket-chip:hover { border-color:var(--mo-orange); color:var(--mo-orange); }
+    .opit-expand-icon { font-size:.7rem; color:var(--mo-orange); transition:transform .2s; display:inline-block; }
+    .opit-row.open .opit-expand-icon { transform:rotate(90deg); }
+    .opit-resumen { max-width:340px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:.78rem; color:var(--mo-muted); }
+"""
+
+OPIT_GLOBAL_JS = """
+function toggleOpit(row) {
+  var id = row.dataset.id;
+  var detailRow = document.getElementById(id);
+  var icon = row.querySelector('.opit-expand-icon');
+  var open = detailRow.style.display === 'table-row';
+  detailRow.style.display = open ? 'none' : 'table-row';
+  row.classList.toggle('open', !open);
+}
+"""
+
+def _dias_color(dias):
+    if dias is None:
+        return "var(--mo-muted)"
+    if dias > 10:
+        return "#C62828"
+    if dias > 5:
+        return "#E65100"
+    return "var(--mo-text)"
+
+
+def build_opit_global_section(rows_all):
+    """Genera el bloque HTML de OPITs para global.html, agrupado por OPIT."""
+    from collections import defaultdict
+
+    ALERTA_RANK = {"CRITICO": 3, "AVISO": 2, "OK": 1, "SIN_FECHA": 0}
+    grupos = {}  # opit_clave -> dict
+
+    for r in rows_all:
+        opit_key = r.get("opit_clave") or r.get("ISSUE_OPIT") or ""
+        if not opit_key:
+            continue
+        if opit_key not in grupos:
+            grupos[opit_key] = {
+                "tickets": [],
+                "opit_summary":   r.get("opit_summary") or r.get("OPIT_SUMMARY"),
+                "opit_status":    r.get("opit_status")  or r.get("OPIT_STATUS"),
+                "PRIO_OPIT":      r.get("PRIO_OPIT"),
+                "dias":           r.get("dias_opit_abierto"),
+                "alerta":         r.get("alerta_opit", "OK"),
+                "tipo":           set(),
+            }
+        g = grupos[opit_key]
+        g["tickets"].append(r.get("CLAVE", ""))
+        tipo = r.get("TIPO_SERVICIO", "")
+        g["tipo"].add("TV" if tipo == "TV" else "Fijo")
+        cur_rank  = ALERTA_RANK.get(r.get("alerta_opit", "OK"), 1)
+        prev_rank = ALERTA_RANK.get(g["alerta"], 1)
+        if cur_rank > prev_rank:
+            g["alerta"] = r.get("alerta_opit", "OK")
+
+    if not grupos:
+        return ""
+
+    # Ordenar: más días primero (None al final)
+    sorted_opits = sorted(
+        grupos.items(),
+        key=lambda kv: (kv[1]["dias"] is None, -(kv[1]["dias"] or 0))
+    )
+
+    total_opits   = len(sorted_opits)
+    total_tickets = sum(len(g["tickets"]) for _, g in sorted_opits)
+
+    rows_html = ""
+    for idx, (opit_key, g) in enumerate(sorted_opits):
+        uid      = f"opit{idx}"
+        alerta   = g["alerta"]
+        dias     = g["dias"]
+        icon     = alerta_icon(alerta)
+        row_cls  = "opit-row-critico" if alerta == "CRITICO" else ("opit-row-aviso" if alerta == "AVISO" else "")
+        dias_disp = f"{dias}d" if dias is not None else "—"
+        dias_color = _dias_color(dias)
+        tipo_str = " / ".join(sorted(g["tipo"]))
+        resumen  = esc(g["opit_summary"] or "")
+        status   = esc(g["opit_status"]  or "—")
+        prio     = esc(g["PRIO_OPIT"]    or "—")
+        num      = len(g["tickets"])
+        opit_esc = esc(opit_key)
+
+        rows_html += (
+            f'<tr class="opit-row {row_cls}" onclick="toggleOpit(this)" data-id="{uid}">'
+            f'<td><span class="opit-expand-icon">&#9658;</span></td>'
+            f'<td><a href="https://jiranext.masmovil.com/browse/{opit_esc}" target="_blank" onclick="event.stopPropagation()">{opit_esc}</a></td>'
+            f'<td class="opit-resumen" title="{resumen}">{resumen}</td>'
+            f'<td>{status}</td>'
+            f'<td>{tipo_str}</td>'
+            f'<td>{prio}</td>'
+            f'<td><strong style="color:{dias_color}">{dias_disp}</strong></td>'
+            f'<td><strong>{num}</strong></td>'
+            f'<td>{icon}</td>'
+            f'</tr>\n'
+        )
+
+        chips = ""
+        MAX_SHOW = 25
+        shown = g["tickets"][:MAX_SHOW]
+        extra = len(g["tickets"]) - MAX_SHOW
+        for clave in shown:
+            clave_e = esc(clave)
+            chips += f'<a class="opit-ticket-chip" href="https://tgjira.masmovil.com/browse/{clave_e}" target="_blank">{clave_e}</a>'
+        if extra > 0:
+            chips += f'<span style="font-size:.72rem;color:var(--mo-muted)">&hellip; y {extra} m&aacute;s</span>'
+
+        label_t = "ticket asociado" if num == 1 else "tickets asociados"
+        rows_html += (
+            f'<tr class="opit-tickets-row" id="{uid}">'
+            f'<td colspan="9">'
+            f'<div style="font-size:.72rem;color:var(--mo-muted);margin-bottom:4px">{num} {label_t}:</div>'
+            f'<div class="opit-tickets-list">{chips}</div>'
+            f'</td></tr>\n'
+        )
+
+    return (
+        f'\n<!-- OPITS -->\n'
+        f'<div class="opit-section">\n'
+        f'  <div class="opit-header">\n'
+        f'    <h2>OPITs abiertos</h2>\n'
+        f'    <span class="opit-badge">{total_opits} OPITs &middot; {total_tickets} tickets</span>\n'
+        f'  </div>\n'
+        f'  <div style="overflow-x:auto">\n'
+        f'  <table class="opit-table">\n'
+        f'    <thead><tr>'
+        f'<th style="width:28px"></th><th>OPIT</th><th>Resumen</th>'
+        f'<th>Estado</th><th>Tipo</th><th>Prioridad</th><th>D&iacute;as</th><th>Tickets</th><th></th>'
+        f'</tr></thead>\n'
+        f'    <tbody>\n{rows_html}    </tbody>\n'
+        f'  </table>\n'
+        f'  </div>\n'
+        f'</div>\n'
+    )
+
+
+# ─────────────────────────────────────────────────────────────────
 # PARCHEAR NAV en global.html, fijo.html
 # ─────────────────────────name───────────────────────────────────
 def patch_nav(html_path, patches):
@@ -272,7 +432,8 @@ def patch_nav(html_path, patches):
 
 NAV_TV_DISABLED  = '<a href="tv.html" class="disabled" title="Próximamente">TV</a>'
 NAV_TV_ENABLED   = '<a href="tv.html">TV</a>'
-NAV_OPITs_ENTRY  = '<li><a href="opits.html">OPITs</a></li>'
+NAV_OPITs_ENTRY    = '<li><a href="opits.html">OPITs</a></li>'
+NAV_FEEDBACK_ENTRY = '<li><a href="feedback.html">Feedback</a></li>'
 
 BTN_TV_DISABLED  = '<button class="product-tab" disabled title="Próximamente">TV</button>'
 BTN_TV_ENABLED   = '<button class="product-tab" onclick="location.href=\'tv.html\'">TV</button>'
@@ -321,15 +482,44 @@ def main():
     for fname in ["global.html", "fijo.html"]:
         fpath = REPORTES_DIR / fname
         patch_nav(fpath, nav_patches)
-        # Añadir link OPITs al nav si no existe
+        # Añadir links OPITs y Feedback al nav si no existen
         content = fpath.read_text(encoding="utf-8") if fpath.exists() else ""
+        changed = False
         if "opits.html" not in content and '<li><a href="tv.html">' in content:
             content = content.replace(
                 '<li><a href="tv.html">TV</a></li>',
                 '<li><a href="tv.html">TV</a></li>\n      ' + NAV_OPITs_ENTRY
             )
+            changed = True
+        if "feedback.html" not in content and "opits.html" in content:
+            content = content.replace(
+                NAV_OPITs_ENTRY,
+                NAV_OPITs_ENTRY + '\n      ' + NAV_FEEDBACK_ENTRY
+            )
+            changed = True
+        if changed:
             fpath.write_text(content, encoding="utf-8")
-            print(f"  [OK] Link OPITs añadido a {fname}")
+            print(f"  [OK] Nav actualizado en {fname}")
+
+    # Inyectar sección OPITs en global.html
+    global_path = REPORTES_DIR / "global.html"
+    if global_path.exists():
+        content = global_path.read_text(encoding="utf-8")
+        # Inyectar CSS (solo si no está ya)
+        if "opit-section" not in content:
+            content = content.replace("</style>", OPIT_GLOBAL_CSS + "\n  </style>", 1)
+        # Inyectar JS del toggle (solo si no está ya)
+        if "toggleOpit" not in content:
+            content = content.replace("</body>", f"<script>{OPIT_GLOBAL_JS}</script>\n</body>", 1)
+        # Reemplazar placeholder (siempre, para que cada día tenga datos frescos)
+        opit_section = build_opit_global_section(rows_opit)
+        if "<!-- OPIT_WIDGET_PLACEHOLDER -->" in content:
+            content = content.replace("<!-- OPIT_WIDGET_PLACEHOLDER -->", opit_section)
+        elif "<!-- OPITS -->" not in content:
+            # fallback: inyectar antes del footer si el placeholder no existe
+            content = content.replace("<!-- FOOTER -->", opit_section + "\n<!-- FOOTER -->", 1)
+        global_path.write_text(content, encoding="utf-8")
+        print("  [OK] Sección OPITs inyectada en global.html")
 
     print("\nListo. Archivos generados:")
     print(f"  reportes/tv.html")
@@ -464,6 +654,7 @@ TV_HTML_TEMPLATE = """\
       <li><a href="fijo.html">Fijo</a></li>
       <li><a href="tv.html" class="active">TV</a></li>
       <li><a href="opits.html">OPITs</a></li>
+      <li><a href="feedback.html">Feedback</a></li>
     </ul>
   </div>
   <div style="display:flex;align-items:center;gap:12px">
@@ -578,6 +769,7 @@ TV_HTML_TEMPLATE = """\
     <a href="global.html">Global</a>
     <a href="fijo.html">Informe Fijo</a>
     <a href="opits.html">OPITs</a>
+    <a href="feedback.html">Feedback</a>
   </div>
 </footer>
 
@@ -782,6 +974,7 @@ OPITS_HTML_TEMPLATE = """\
       <li><a href="global.html">Global</a></li>
       <li><a href="fijo.html">Fijo + TV</a></li>
       <li><a href="opits.html" class="active">OPITs</a></li>
+      <li><a href="feedback.html">Feedback</a></li>
     </ul>
   </div>
   <div style="display:flex;align-items:center;gap:12px">

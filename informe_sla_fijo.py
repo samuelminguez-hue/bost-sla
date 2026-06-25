@@ -121,6 +121,8 @@ def run_query(client, sql_path):
 # HELPERS HTML
 # ─────────────────────────────────────────────────────────────────
 def kpi_color(pct):
+    if pct is None:
+        return "#888888"
     return "#2E7D32" if pct >= 80 else "#C62828"
 
 
@@ -639,6 +641,7 @@ HTML_TEMPLATE = """\
         <li><a href="global.html">Global</a></li>
         <li><a href="#" class="active">Fijo + TV</a></li>
         <li><a href="opits.html">OPITs</a></li>
+        <li><a href="feedback.html">Feedback</a></li>
       </ul>
       <button class="mo-theme-btn" id="themeToggle" title="Cambiar tema">
         <span class="mo-theme-icon" id="themeIcon">&#9790;</span>
@@ -995,7 +998,7 @@ def build_email_body(results, now, historico=None):
             fecha_lbl = str(d["fecha"])[5:].replace("-", "/")
             tendencia_html += f'<tr><td style="color:#888;padding:2px 6px 2px 0;white-space:nowrap">{fecha_lbl}</td>'
             for k in col_keys:
-                if k in d and d[k]:
+                if k in d and d[k] and d[k].get("pct") is not None:
                     pct_v = d[k]["pct"]
                     c = kpi_color(pct_v)
                     tendencia_html += f'<td style="text-align:center;font-weight:700;color:{c};padding:2px 4px">{pct_v}%</td>'
@@ -1391,7 +1394,7 @@ def generar_resumen_ia(kpis, pct_global, results, now):
 
     try:
         payload = _json.dumps({
-            "model": "claude-sonnet-4-5",
+            "model": "claude-sonnet-4-6",
             "max_tokens": 220,
             "messages": [{"role": "user", "content": prompt}]
         }).encode("utf-8")
@@ -1459,7 +1462,7 @@ def _calc_kpis_results(results):
             comp = rows
         incumple = len([r for r in comp if r.get("estado_sla") == "INCUMPLE"])
         total = len(comp)
-        pct = round(100 * (total - incumple) / total, 1) if total > 0 else 100.0
+        pct = round(100 * (total - incumple) / total, 1) if total > 0 else None
         out[key] = {"pct": pct, "incumple": incumple, "total": total}
     return out
 
@@ -1490,7 +1493,18 @@ def _escribir_historico_bq(kpis, fecha, client):
         client.create_table(_bq.Table(table_id, schema=schema))
         print(f"[BQ] Tabla {table_id} creada")
     fecha_str = fecha.strftime("%Y-%m-%d")
-    client.query(f"DELETE FROM `{table_id}` WHERE fecha = '{fecha_str}'").result()
+    # Verificar si ya existe fila para hoy; si está en streaming buffer, el DELETE fallaría
+    count_rows = list(client.query(
+        f"SELECT COUNT(*) AS n FROM `{table_id}` WHERE fecha = '{fecha_str}'"
+    ).result())
+    if count_rows and count_rows[0]["n"] > 0:
+        try:
+            client.query(f"DELETE FROM `{table_id}` WHERE fecha = '{fecha_str}'").result()
+        except Exception as _del_err:
+            if "streaming buffer" in str(_del_err).lower():
+                print(f"[BQ] Fila de {fecha_str} ya en BQ (streaming buffer) — omitiendo reinserción")
+                return
+            raise
     row = {
         "fecha": fecha_str,
         "pct_fijo": kpis["fijo"]["pct"], "incumple_fijo": kpis["fijo"]["incumple"], "total_fijo": kpis["fijo"]["total"],
@@ -1528,10 +1542,10 @@ def cargar_historico(dias=14, client=None):
                 for r in rows:
                     historico.append({
                         "fecha": r["fecha"],
-                        "fijo":         {"pct": float(r["pct_fijo"]),         "incumple": int(r["incumple_fijo"])},
-                        "logistica":    {"pct": float(r["pct_logistica"]),     "incumple": int(r["incumple_logistica"])},
-                        "tv":           {"pct": float(r["pct_tv"]),            "incumple": int(r["incumple_tv"])},
-                        "tv_logistica": {"pct": float(r["pct_tv_logistica"]),  "incumple": int(r["incumple_tv_logistica"])},
+                        "fijo":         {"pct": float(r["pct_fijo"])        if r["total_fijo"]         > 0 else None, "incumple": int(r["incumple_fijo"])},
+                        "logistica":    {"pct": float(r["pct_logistica"])    if r["total_logistica"]    > 0 else None, "incumple": int(r["incumple_logistica"])},
+                        "tv":           {"pct": float(r["pct_tv"])           if r["total_tv"]           > 0 else None, "incumple": int(r["incumple_tv"])},
+                        "tv_logistica": {"pct": float(r["pct_tv_logistica"]) if r["total_tv_logistica"] > 0 else None, "incumple": int(r["incumple_tv_logistica"])},
                     })
                 print(f"[BQ] Histórico: {len(historico)} días desde BQ")
                 return historico
@@ -1608,7 +1622,7 @@ def _build_svg_chart(historico, width=560, height=220):
     for key in ["fijo", "logistica", "tv", "tv_logistica"]:
         color = COLA_COLORS[key]
         label = COLA_LABELS[key]
-        puntos = [(xs[i], y_for(historico[i][key]["pct"])) for i in range(n) if key in historico[i]]
+        puntos = [(xs[i], y_for(historico[i][key]["pct"])) for i in range(n) if key in historico[i] and historico[i][key]["pct"] is not None]
         if len(puntos) < 1:
             continue
 
@@ -1690,7 +1704,7 @@ def generar_global_html(results, now, historico):
             computables = rows
         n_comp     = len(computables)
         n_incumple = len([r for r in computables if r.get("estado_sla") == "INCUMPLE"])
-        pct        = round(100 * (n_comp - n_incumple) / n_comp, 1) if n_comp > 0 else 100.0
+        pct        = round(100 * (n_comp - n_incumple) / n_comp, 1) if n_comp > 0 else None
         color      = kpi_color(pct)
         total_computables += n_comp
         total_incumple    += n_incumple
@@ -1729,14 +1743,17 @@ def generar_global_html(results, now, historico):
     # ── Cards de colas ────────────────────────────────────────────────
     cards_html = ""
     for k in kpis_dia:
-        bar_pct = max(2, k["pct"])
+        if k["n_comp"] == 0:
+            continue
+        bar_pct = max(2, k["pct"]) if k["pct"] is not None else 0
+        pct_display = f"{k['pct']}%" if k["pct"] is not None else "—"
         cards_html += f"""
         <div class="kpi-card">
           <div class="kpi-card-header">
             <span class="kpi-card-label">{k['label']}</span>
             <span class="kpi-card-sla">SLA {k['sla']}</span>
           </div>
-          <div class="kpi-card-pct" style="color:{k['color']}">{k['pct']}%</div>
+          <div class="kpi-card-pct" style="color:{k['color']}">{pct_display}</div>
           <div class="kpi-bar-bg">
             <div class="kpi-bar-fill" style="background:{k['color']};width:{bar_pct}%"></div>
           </div>
@@ -1745,7 +1762,8 @@ def generar_global_html(results, now, historico):
 
     # ── Análisis automático ───────────────────────────────────────────
     puntos = []
-    mejor = max(kpis_dia, key=lambda x: x["pct"])
+    kpis_dia_con_datos = [k for k in kpis_dia if k["n_comp"] > 0 and k["pct"] is not None]
+    mejor = max(kpis_dia_con_datos, key=lambda x: x["pct"]) if kpis_dia_con_datos else None
     colas_significativas_dia = [k for k in kpis_dia if k["n_comp"] >= 5 and k["n_incumple"] > 0]
     if colas_significativas_dia:
         peor = min(colas_significativas_dia, key=lambda x: x["pct"])
@@ -1771,9 +1789,9 @@ def generar_global_html(results, now, historico):
         )
     else:
         puntos.append("Sin tickets crónicos (&gt;96h) en STFIJO-ZL hoy.")
-    if mejor["pct"] >= 80:
+    if mejor and mejor["pct"] >= 80:
         puntos.append(f"{mejor['label']} lidera con {mejor['pct']}% de cumplimiento.")
-    else:
+    elif mejor:
         puntos.append("Ninguna cola supera el objetivo del 80% hoy — se recomienda revisión integral.")
 
     analisis_html = "".join(
@@ -2238,6 +2256,7 @@ def generar_global_html(results, now, historico):
       <li><a href="global.html" class="active">Global</a></li>
       <li><a href="fijo.html">Fijo + TV</a></li>
       <li><a href="opits.html">OPITs</a></li>
+      <li><a href="feedback.html">Feedback</a></li>
     </ul>
   </div>
   <div style="display:flex;align-items:center;gap:12px">
@@ -2336,6 +2355,8 @@ def generar_global_html(results, now, historico):
     {analisis_html}
   </ul>
 </div>
+
+<!-- OPIT_WIDGET_PLACEHOLDER -->
 
 <!-- FOOTER -->
 <footer class="mo-footer">
