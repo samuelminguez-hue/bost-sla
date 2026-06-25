@@ -74,6 +74,9 @@ calcular_inicio_reloj AS (
     CASE
       WHEN NOT sat2_responsable                                                                  THEN NULL
       WHEN MOTIVO_PENDIENTE_CLIENTE_TG = 'CLIENTE ILOCALIZABLE' AND FECHA_REVISION_N2 IS NOT NULL THEN FECHA_REVISION_N2
+      -- INCIDENCIA_TRANSPORTE / DEVUELTO_ALMACEN: reloj desde N2 (SAT2 espera al proveedor logístico)
+      WHEN estado_logistica IN ('INCIDENCIA_TRANSPORTE', 'DEVUELTO_ALMACEN') AND FECHA_REVISION_N2 IS NOT NULL THEN FECHA_REVISION_N2
+      -- Caso normal (EQUIPO_ENTREGADO): prioridad FECHA_ULTIMA_LABEL_LOGISTICA → N2 → CREACION
       WHEN FECHA_ULTIMA_LABEL_LOGISTICA IS NOT NULL                                              THEN FECHA_ULTIMA_LABEL_LOGISTICA
       WHEN FECHA_REVISION_N2 IS NOT NULL                                                         THEN FECHA_REVISION_N2
       ELSE FECHA_CREACION
@@ -81,6 +84,7 @@ calcular_inicio_reloj AS (
     CASE
       WHEN NOT sat2_responsable                                                                  THEN 'NO_APLICA'
       WHEN MOTIVO_PENDIENTE_CLIENTE_TG = 'CLIENTE ILOCALIZABLE' AND FECHA_REVISION_N2 IS NOT NULL THEN 'FECHA_REVISION_N2_ILOC'
+      WHEN estado_logistica IN ('INCIDENCIA_TRANSPORTE', 'DEVUELTO_ALMACEN') AND FECHA_REVISION_N2 IS NOT NULL THEN 'FECHA_REVISION_N2_TRANSPORTE'
       WHEN FECHA_ULTIMA_LABEL_LOGISTICA IS NOT NULL                                              THEN 'FECHA_ULTIMA_LABEL_LOGISTICA'
       WHEN FECHA_REVISION_N2 IS NOT NULL                                                         THEN 'FECHA_REVISION_N2'
       ELSE                                                                                            'FECHA_CREACION'
