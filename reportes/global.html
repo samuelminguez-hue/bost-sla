@@ -53,17 +53,17 @@
     .hero-pill {
       padding:6px 16px; border-radius:20px; font-size:0.85rem;
       font-weight:700; color:#fff;
-      background:#1B5E20;
+      background:#B71C1C;
     }
 
     /* KPI GLOBAL */
     .kpi-global-block {
       background:var(--mo-white); border-radius:8px; margin:20px 20px 0;
       padding:20px 24px; display:flex; align-items:center; gap:24px;
-      border-left:5px solid #2E7D32;
+      border-left:5px solid #C62828;
       box-shadow:0 1px 4px rgba(0,0,0,.06);
     }
-    .kpi-global-number { font-size:2.8rem; font-weight:700; color:#2E7D32; line-height:1; }
+    .kpi-global-number { font-size:2.8rem; font-weight:700; color:#C62828; line-height:1; }
     .kpi-global-label { font-size:0.9rem; color:var(--mo-muted); }
     .kpi-global-detail { font-size:0.8rem; color:var(--mo-muted); margin-top:3px; }
 
@@ -206,17 +206,17 @@
 <section class="hero">
   <div>
     <div class="hero-title">SLA Global</div>
-    <div class="hero-sub">Viernes, 26/06/2026 &middot; Datos a las 08:30h &middot; Generado 09:51h</div>
+    <div class="hero-sub">Lunes, 29/06/2026 &middot; Datos a las 08:30h &middot; Generado 07:54h</div>
   </div>
-  <div class="hero-pill">✅ CORRECTO</div>
+  <div class="hero-pill">🔴 CRÍTICO</div>
 </section>
 
 <!-- KPI GLOBAL -->
 <div class="kpi-global-block">
-  <div class="kpi-global-number">80.2%</div>
+  <div class="kpi-global-number">49.9%</div>
   <div>
     <div class="kpi-global-label">Cumplimiento global SLA</div>
-    <div class="kpi-global-detail">1339 cumplen · <strong style="color:#2E7D32">331 incumplen</strong> · 1670 total computables</div>
+    <div class="kpi-global-detail">733 cumplen · <strong style="color:#C62828">736 incumplen</strong> · 1469 total computables</div>
   </div>
 </div>
 
@@ -228,44 +228,44 @@
             <span class="kpi-card-label">STFIJO</span>
             <span class="kpi-card-sla">SLA 24h</span>
           </div>
-          <div class="kpi-card-pct" style="color:#2E7D32">86.8%</div>
+          <div class="kpi-card-pct" style="color:#C62828">57.4%</div>
           <div class="kpi-bar-bg">
-            <div class="kpi-bar-fill" style="background:#2E7D32;width:86.8%"></div>
+            <div class="kpi-bar-fill" style="background:#C62828;width:57.4%"></div>
           </div>
-          <div class="kpi-card-detail">150 incumplen · 1136 computables</div>
+          <div class="kpi-card-detail">401 incumplen · 941 computables</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-card-header">
             <span class="kpi-card-label">Logística</span>
             <span class="kpi-card-sla">SLA 24h</span>
           </div>
-          <div class="kpi-card-pct" style="color:#C62828">44.2%</div>
+          <div class="kpi-card-pct" style="color:#C62828">12.0%</div>
           <div class="kpi-bar-bg">
-            <div class="kpi-bar-fill" style="background:#C62828;width:44.2%"></div>
+            <div class="kpi-bar-fill" style="background:#C62828;width:12.0%"></div>
           </div>
-          <div class="kpi-card-detail">91 incumplen · 163 computables</div>
+          <div class="kpi-card-detail">176 incumplen · 200 computables</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-card-header">
             <span class="kpi-card-label">TV</span>
             <span class="kpi-card-sla">SLA 24h</span>
           </div>
-          <div class="kpi-card-pct" style="color:#2E7D32">83.9%</div>
+          <div class="kpi-card-pct" style="color:#C62828">69.0%</div>
           <div class="kpi-bar-bg">
-            <div class="kpi-bar-fill" style="background:#2E7D32;width:83.9%"></div>
+            <div class="kpi-bar-fill" style="background:#C62828;width:69.0%"></div>
           </div>
-          <div class="kpi-card-detail">40 incumplen · 249 computables</div>
+          <div class="kpi-card-detail">75 incumplen · 242 computables</div>
         </div>
         <div class="kpi-card">
           <div class="kpi-card-header">
             <span class="kpi-card-label">TV Logística</span>
             <span class="kpi-card-sla">SLA 24h</span>
           </div>
-          <div class="kpi-card-pct" style="color:#C62828">59.0%</div>
+          <div class="kpi-card-pct" style="color:#C62828">2.3%</div>
           <div class="kpi-bar-bg">
-            <div class="kpi-bar-fill" style="background:#C62828;width:59.0%"></div>
+            <div class="kpi-bar-fill" style="background:#C62828;width:2.3%"></div>
           </div>
-          <div class="kpi-card-detail">50 incumplen · 122 computables</div>
+          <div class="kpi-card-detail">84 incumplen · 86 computables</div>
         </div>
 </div>
 
@@ -323,7 +323,7 @@
 <div class="section-block">
   <div class="section-title">Análisis del día</div>
   <ul class="analisis-list" style="margin-top:12px">
-    <li>La cola con mayor incumplimiento hoy es <strong>Logística</strong> (91 de 163 tickets, 44.2% cumplimiento).</li><li><strong>8 tickets en STFIJO-ZL superan las 96h sin gestión</strong>: <a href="https://tgjira.masmovil.com/browse/ATC-8524551" style="color:#FF5900;text-decoration:none">ATC-8524551</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8579603" style="color:#FF5900;text-decoration:none">ATC-8579603</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8590804" style="color:#FF5900;text-decoration:none">ATC-8590804</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8516376" style="color:#FF5900;text-decoration:none">ATC-8516376</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8541570" style="color:#FF5900;text-decoration:none">ATC-8541570</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8584996" style="color:#FF5900;text-decoration:none">ATC-8584996</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8581850" style="color:#FF5900;text-decoration:none">ATC-8581850</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8365058" style="color:#FF5900;text-decoration:none">ATC-8365058</a>.</li><li>STFIJO lidera con 86.8% de cumplimiento.</li>
+    <li>La cola con mayor incumplimiento hoy es <strong>TV Logística</strong> (84 de 86 tickets, 2.3% cumplimiento).</li><li><strong>11 tickets en STFIJO-ZL superan las 96h sin gestión</strong>: <a href="https://tgjira.masmovil.com/browse/ATC-8524551" style="color:#FF5900;text-decoration:none">ATC-8524551</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8579603" style="color:#FF5900;text-decoration:none">ATC-8579603</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8516376" style="color:#FF5900;text-decoration:none">ATC-8516376</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8541570" style="color:#FF5900;text-decoration:none">ATC-8541570</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8365058" style="color:#FF5900;text-decoration:none">ATC-8365058</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8213670" style="color:#FF5900;text-decoration:none">ATC-8213670</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8601453" style="color:#FF5900;text-decoration:none">ATC-8601453</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8597604" style="color:#FF5900;text-decoration:none">ATC-8597604</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8539592" style="color:#FF5900;text-decoration:none">ATC-8539592</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8580438" style="color:#FF5900;text-decoration:none">ATC-8580438</a>, <a href="https://tgjira.masmovil.com/browse/ATC-8607242" style="color:#FF5900;text-decoration:none">ATC-8607242</a>.</li><li>Ninguna cola supera el objetivo del 80% hoy — se recomienda revisión integral.</li>
   </ul>
 </div>
 
@@ -340,7 +340,7 @@
       <rect x="36" y="24" width="16" height="16" fill="#FF5900"/>
       <circle cx="104" cy="34" r="28" fill="none" stroke="#fff" stroke-width="10"/>
     </svg>
-    <span style="margin-left:10px">Generado automáticamente · BOST MasOrange · 26/06/2026 09:51h</span>
+    <span style="margin-left:10px">Generado automáticamente · BOST MasOrange · 29/06/2026 07:54h</span>
   </div>
   <div class="mo-footer-links">
     <a href="fijo.html">Informe Fijo + TV</a>
@@ -365,7 +365,7 @@
     applyTheme(isDark);
     btn.addEventListener('click', function() { isDark = !isDark; applyTheme(isDark); });
   })();
-  const CHART_DATA = [{"fecha": "2026-06-15", "fijo": {"pct": 73.1, "incumple": 235}, "logistica": {"pct": 0.8, "incumple": 240}, "tv": {"pct": null, "incumple": 0}, "tv_logistica": {"pct": null, "incumple": 0}}, {"fecha": "2026-06-16", "fijo": {"pct": 91.0, "incumple": 89}, "logistica": {"pct": null, "incumple": 0}, "tv": {"pct": null, "incumple": 0}, "tv_logistica": {"pct": null, "incumple": 0}}, {"fecha": "2026-06-17", "fijo": {"pct": 80.3, "incumple": 211}, "logistica": {"pct": null, "incumple": 0}, "tv": {"pct": null, "incumple": 0}, "tv_logistica": {"pct": null, "incumple": 0}}, {"fecha": "2026-06-18", "fijo": {"pct": 85.7, "incumple": 157}, "logistica": {"pct": null, "incumple": 0}, "tv": {"pct": null, "incumple": 0}, "tv_logistica": {"pct": null, "incumple": 0}}, {"fecha": "2026-06-19", "fijo": {"pct": 79.5, "incumple": 228}, "logistica": {"pct": null, "incumple": 0}, "tv": {"pct": null, "incumple": 0}, "tv_logistica": {"pct": null, "incumple": 0}}, {"fecha": "2026-06-22", "fijo": {"pct": 38.0, "incumple": 718}, "logistica": {"pct": null, "incumple": 0}, "tv": {"pct": null, "incumple": 0}, "tv_logistica": {"pct": null, "incumple": 0}}, {"fecha": "2026-06-23", "fijo": {"pct": 79.1, "incumple": 272}, "logistica": {"pct": 50.5, "incumple": 54}, "tv": {"pct": null, "incumple": 51}, "tv_logistica": {"pct": null, "incumple": 41}}, {"fecha": "2026-06-24", "fijo": {"pct": 85.0, "incumple": 206}, "logistica": {"pct": 71.9, "incumple": 34}, "tv": {"pct": 83.6, "incumple": 41}, "tv_logistica": {"pct": 76.3, "incumple": 22}}, {"fecha": "2026-06-25", "fijo": {"pct": 86.5, "incumple": 164}, "logistica": {"pct": 56.5, "incumple": 54}, "tv": {"pct": 85.6, "incumple": 33}, "tv_logistica": {"pct": 63.4, "incumple": 34}}];
+  const CHART_DATA = [{"fecha": "2026-06-16", "fijo": {"pct": 91.0, "incumple": 89}, "logistica": {"pct": null, "incumple": 0}, "tv": {"pct": null, "incumple": 0}, "tv_logistica": {"pct": null, "incumple": 0}}, {"fecha": "2026-06-17", "fijo": {"pct": 80.3, "incumple": 211}, "logistica": {"pct": null, "incumple": 0}, "tv": {"pct": null, "incumple": 0}, "tv_logistica": {"pct": null, "incumple": 0}}, {"fecha": "2026-06-18", "fijo": {"pct": 85.7, "incumple": 157}, "logistica": {"pct": null, "incumple": 0}, "tv": {"pct": null, "incumple": 0}, "tv_logistica": {"pct": null, "incumple": 0}}, {"fecha": "2026-06-19", "fijo": {"pct": 79.5, "incumple": 228}, "logistica": {"pct": null, "incumple": 0}, "tv": {"pct": null, "incumple": 0}, "tv_logistica": {"pct": null, "incumple": 0}}, {"fecha": "2026-06-22", "fijo": {"pct": 38.0, "incumple": 718}, "logistica": {"pct": null, "incumple": 0}, "tv": {"pct": null, "incumple": 0}, "tv_logistica": {"pct": null, "incumple": 0}}, {"fecha": "2026-06-23", "fijo": {"pct": 79.1, "incumple": 272}, "logistica": {"pct": 50.5, "incumple": 54}, "tv": {"pct": null, "incumple": 51}, "tv_logistica": {"pct": null, "incumple": 41}}, {"fecha": "2026-06-24", "fijo": {"pct": 85.0, "incumple": 206}, "logistica": {"pct": 71.9, "incumple": 34}, "tv": {"pct": 83.6, "incumple": 41}, "tv_logistica": {"pct": 76.3, "incumple": 22}}, {"fecha": "2026-06-25", "fijo": {"pct": 86.5, "incumple": 164}, "logistica": {"pct": 56.5, "incumple": 54}, "tv": {"pct": 85.6, "incumple": 33}, "tv_logistica": {"pct": 63.4, "incumple": 34}}, {"fecha": "2026-06-26", "fijo": {"pct": 86.8, "incumple": 150}, "logistica": {"pct": 44.2, "incumple": 91}, "tv": {"pct": 83.9, "incumple": 40}, "tv_logistica": {"pct": 59.0, "incumple": 50}}];
 const COLA_COLORS = {fijo:'#FF5900',logistica:'#9c27b0',tv:'#1565C0',tv_logistica:'#00796B'};
 const COLA_LABELS = {fijo:'Fijo',logistica:'Logística',tv:'TV',tv_logistica:'TV Logística'};
 const COLA_KEYS   = ['fijo','logistica','tv','tv_logistica'];
